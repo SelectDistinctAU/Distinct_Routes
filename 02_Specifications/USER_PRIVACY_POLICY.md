@@ -167,11 +167,12 @@ This policy may be updated to reflect:
 
 ---
 
-## CONTACT INFORMATION
+## CONTACT INFORMATION & WEB POLICY STATEMENT
 
+- **Official Web Privacy Policy:** `https://selectdistinct.au/privacy-policy-distinct-routes`
 - **Privacy Inquiries:** `distinctroutes@pm.me`
 - **Bug Reports & Feedback:** GitHub Issues (public)
-- **Hosting Location & Website:** `https://selectdistinct.au`
+- **Website:** `https://selectdistinct.au`
 
 **Response time:** Within 14 business days
 

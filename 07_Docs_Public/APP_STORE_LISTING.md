@@ -3,6 +3,7 @@
 **App Title:** Distinct Routes — Safety Cycling & Mobility Navigator  
 **Package Name:** `com.distinctroutes.app`  
 **License:** GNU General Public License v3.0 (GPLv3) — Free & Open Source  
+**Privacy Policy URL:** `https://selectdistinct.au/privacy-policy-distinct-routes`  
 
 ---
 

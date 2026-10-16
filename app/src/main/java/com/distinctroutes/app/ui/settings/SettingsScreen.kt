@@ -499,6 +499,7 @@ fun SettingsScreen(
             title = { Text("Distinct Routes Privacy Statement") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("• Official Web Policy: https://selectdistinct.au/privacy-policy-distinct-routes", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     Text("• Zero User Tracking: No user accounts, no registration, no location analytics, and no advertising IDs.", style = MaterialTheme.typography.bodySmall)
                     Text("• On-Device Storage: Saved routes and ride history are stored locally on your device in private application storage.", style = MaterialTheme.typography.bodySmall)
                     Text("• Open Community Data: Map tiles and routing services connect directly to open-data servers (BBBike.org & OpenStreetMap) with standard User-Agent headers.", style = MaterialTheme.typography.bodySmall)
