@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel managing application settings, default city, theme mode, and vehicle safety defaults.
+ * ViewModel managing application settings, default city, theme mode, brand color, and vehicle safety defaults.
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -28,6 +28,9 @@ class SettingsViewModel @Inject constructor(
 
     private val _themeMode = MutableStateFlow(preferencesStorage.getThemeMode())
     val themeMode: StateFlow<String> = _themeMode.asStateFlow()
+
+    private val _colourMode = MutableStateFlow(preferencesStorage.getColourMode())
+    val colourMode: StateFlow<String> = _colourMode.asStateFlow()
 
     private val _availableCities = MutableStateFlow<List<String>>(
         listOf("Perth", "Berlin", "Canberra", "Sydney", "Melbourne", "Brisbane", "Adelaide", "London", "Paris", "Rome", "Madrid")
@@ -58,6 +61,11 @@ class SettingsViewModel @Inject constructor(
     fun updateThemeMode(mode: String) {
         _themeMode.value = mode
         preferencesStorage.saveThemeMode(mode)
+    }
+
+    fun updateColourMode(mode: String) {
+        _colourMode.value = mode
+        preferencesStorage.saveColourMode(mode)
     }
 
     fun updateSafetyPreferences(

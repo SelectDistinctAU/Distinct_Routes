@@ -51,7 +51,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val themeMode by settingsViewModel.themeMode.collectAsState()
-            DistinctRoutesTheme(themeMode = themeMode) {
+            val colourMode by settingsViewModel.colourMode.collectAsState()
+            DistinctRoutesTheme(colourMode = colourMode, themeMode = themeMode) {
                 DistinctRoutesMainContent(
                     routePlannerViewModel = routePlannerViewModel,
                     favoritesViewModel = favoritesViewModel,

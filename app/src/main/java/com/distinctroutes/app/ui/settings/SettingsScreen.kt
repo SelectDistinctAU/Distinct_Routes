@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -63,6 +64,7 @@ fun SettingsScreen(
 ) {
     val selectedCity by viewModel.selectedCity.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
+    val colourMode by viewModel.colourMode.collectAsState()
     val preferences by viewModel.preferences.collectAsState()
     val cities by viewModel.availableCities.collectAsState()
 
@@ -121,18 +123,13 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Default BBBike City",
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(modifier = Modifier.padding(12.dp)) {
                 Box {
                     OutlinedTextField(
                         value = selectedCity,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Selected City") },
+                        label = { Text("Default BBBike City") },
                         trailingIcon = {
                             IconButton(onClick = { cityDropdownExpanded = true }) {
                                 Icon(Icons.Default.ArrowDropDown, contentDescription = "Select default city")
@@ -168,12 +165,7 @@ fun SettingsScreen(
                 .clickable { bikeTypeDropdownExpanded = true },
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Default Vehicle / Mobility Device",
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(modifier = Modifier.padding(12.dp)) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -189,7 +181,7 @@ fun SettingsScreen(
                             disabledBorderColor = MaterialTheme.colorScheme.outline,
                             disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
-                        label = { Text("Default Profile") },
+                        label = { Text("Default Vehicle / Mobility Device") },
                         trailingIcon = {
                             Row(
                                 modifier = Modifier.padding(end = 8.dp),
@@ -239,6 +231,40 @@ fun SettingsScreen(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
+
+        // Brand Color Palette Selector Card
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Brand Color Palette",
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = colourMode == "blue",
+                        onClick = { viewModel.updateColourMode("blue") },
+                        label = { Text("Metallic Blue", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
+                        leadingIcon = { Icon(Icons.Default.Palette, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = colourMode == "green",
+                        onClick = { viewModel.updateColourMode("green") },
+                        label = { Text("Emerald Green", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
+                        leadingIcon = { Icon(Icons.Default.Palette, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
 
         // App Theme Mode Selector Card
         Card(

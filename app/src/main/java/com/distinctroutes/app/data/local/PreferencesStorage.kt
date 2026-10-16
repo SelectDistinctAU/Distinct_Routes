@@ -37,6 +37,14 @@ class PreferencesStorage @Inject constructor(
         prefs.edit().putString("key_theme_mode", mode).apply()
     }
 
+    fun getColourMode(): String {
+        return prefs.getString("pref_colour_mode", "blue") ?: "blue"
+    }
+
+    fun saveColourMode(mode: String) {
+        prefs.edit().putString("pref_colour_mode", mode).apply()
+    }
+
     fun getSafetyPreferences(): SafetyPreferences {
         val bikeTypeName = prefs.getString("key_bike_type", BikeType.STANDARD.name) ?: BikeType.STANDARD.name
         val bikeType = try {
