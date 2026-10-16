@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Distinct Routes</string>
+    <string name="disclaimer_safety_banner">提供以安全为导向的路线偏好设置；数据源自 BBBike。骑行前请务必自行评估当地实际路况。</string>
+    <string name="btn_calculate_route">计算安全导向路线</string>
+    <string name="btn_open_osmand">在 OsmAnd 导航中打开</string>
+    <string name="title_select_city">选择 BBBike 城市</string>
+    <string name="title_waypoints">路线规划</string>
+    <string name="title_favourites">收藏路线</string>
+    <string name="title_safety_preferences">安全与骑行偏好</string>
+    <string name="btn_current_gps">使用当前 GPS 位置</string>
+    <string name="label_wheelchair">轮椅 / 手摇自行车</string>
+    <string name="label_mobility_scooter">代步车</string>
+    <string name="msg_gps_denied">位置权限被拒绝；需要手动输入地址。</string>
+    <string name="cd_start_pin">起点 (旗帜 A)</string>
+    <string name="cd_end_pin">终点 (旗帜 B)</string>
+    <string name="btn_add_via_stop">添加途中停靠点 (Via)</string>
+    <string name="btn_remove_via_stop">移除停靠点</string>
+    <string name="title_via_stop">Via (途经停靠点)</string>
+    <string name="cd_via_pin">途经点 (黄点 ●)</string>
+    <string name="title_settings">设置</string>
+    <string name="attr_flaticon">图标由 Magnific - Flaticon 提供</string>
+    <string name="attr_bbbike">路线引擎由 BBBike.org 提供支持</string>
+    <string name="btn_save_favorite">保存到收藏</string>
+    <string name="btn_remove_favorite">移除收藏</string>
+    <string name="btn_load_planner">加载到路线规划器</string>
+    <string name="msg_no_favorites">暂无保存的路线。规划路线后点击“保存到收藏”即可保存在此。</string>
+</resources>

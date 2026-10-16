@@ -1,0 +1,46 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Generated build output
+bin/
+gen/
+out/
+release/
+build/
+app/build/
+.gradle/
+*/build/
+**/.gradle/
+
+# Local configuration & environment
+local.properties
+.idea/
+.artifacts/
+*.iml
+*.iws
+*.ipr
+captures/
+.externalNativeBuild
+.cxx
+
+# Keystore & Secrets
+*.jks
+*.keystore
+google-services.json
+
+# Temporary & Log files
+*.log
+*.hprof
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+*.bak
+*.swp
+*.tmp
+.vscode/
+.sublime-

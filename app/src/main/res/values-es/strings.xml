@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Distinct Routes</string>
+    <string name="disclaimer_safety_banner">Preferencias de ruta orientadas a la seguridad disponibles; datos de BBBike. Evalúe siempre las condiciones locales antes de circular.</string>
+    <string name="btn_calculate_route">Calcular ruta de seguridad</string>
+    <string name="btn_open_osmand">Abrir en el navegador OsmAnd</string>
+    <string name="title_select_city">Seleccionar ciudad BBBike</string>
+    <string name="title_waypoints">Planificador</string>
+    <string name="title_favourites">Favoritos</string>
+    <string name="title_safety_preferences">Seguridad y preferencias de viaje</string>
+    <string name="btn_current_gps">Usar posición GPS actual</string>
+    <string name="label_wheelchair">Silla de ruedas / Handbike</string>
+    <string name="label_mobility_scooter">Scooter de movilidad</string>
+    <string name="msg_gps_denied">Permiso de ubicación denegado; se requiere entrada manual de dirección.</string>
+    <string name="cd_start_pin">Punto de salida (Bandera A)</string>
+    <string name="cd_end_pin">Punto de llegada (Bandera B)</string>
+    <string name="btn_add_via_stop">Añadir parada intermedia (Via)</string>
+    <string name="btn_remove_via_stop">Eliminar parada</string>
+    <string name="title_via_stop">Via (Parada intermedia)</string>
+    <string name="cd_via_pin">Parada intermedia (Punto amarillo ●)</string>
+    <string name="title_settings">Ajustes</string>
+    <string name="attr_flaticon">Iconos creados por Magnific - Flaticon</string>
+    <string name="attr_bbbike">Motor de rutas impulsado por BBBike.org</string>
+    <string name="btn_save_favorite">Guardar en favoritos</string>
+    <string name="btn_remove_favorite">Eliminar favorito</string>
+    <string name="btn_load_planner">Cargar en el planificador</string>
+    <string name="msg_no_favorites">Sin rutas guardadas. Planifique una ruta y toque \'Guardar en favoritos\'.</string>
+</resources>

@@ -1,0 +1,31 @@
+ID,Scenario,Expected Outcome,Severity,Test Type,Automation,Owner
+TC01,Route calculation succeeds within 10 seconds,"Route polyline displayed on map, GPX export enabled",Critical,Manual,Yes,ASAI
+TC02,BBBike API returns HTTP 200,"Valid route parsed from GPX response, no errors thrown",Critical,Manual,Yes,ASAI
+TC03,BBBike API returns HTTP 400 (invalid coords),"User-friendly error message displayed, input fields highlighted for correction",High,Manual,Yes,ASAI
+TC04,BBBike API returns HTTP 429 (rate limit),"Wait 30 seconds message shown, retry button available after cooldown",High,Manual,Yes,ASAI
+TC05,BBBike API returns HTTP 500/503 (server error),"Graceful error dialog with retry option, request queued for later",Medium,Manual,Yes,ASAI
+TC06,Network connection lost during route calc,"Loading indicator stops, error message shown, manual retry available",High,Manual,Yes,ASAI
+TC07,GPX export succeeds,"File saved to internal storage, notification confirms save location",Critical,Manual,Yes,ASAI
+TC08,GPX export fails (storage full/error),"Error message with troubleshooting steps offered, no silent failure",High,Manual,Yes,ASAI
+TC09,GPX file imported into OsmAnd,"Route displays correctly in OsmAnd, turn-by-turn navigation functional",Critical,Manual,No,Owner
+TC10,OsmAnd not installed on device,"Dialog prompts user to install OsmAnd or use GPX file manager fallback",High,Manual,Yes,ASAI
+TC11,GPS permission denied by user,"Manual start/end point entry enabled, route calculation proceeds without GPS",High,Manual,Yes,ASAI
+TC12,GPS accuracy >10 meters,"Warning banner displayed advising poor signal quality, route still calculable",Medium,Manual,No,Owner
+TC13,GPS disabled in system settings,"Prompt to enable GPS or use manual coordinate entry",High,Manual,Yes,ASAI
+TC14,City list loads from BBBike API,"Dropdown populated with 200+ cities, search/filter functional",Critical,Manual,Yes,ASAI
+TC15,Invalid city selected (edge case),"Dropdown resets, error toast shows 'City unavailable'",Medium,Manual,Yes,ASAI
+TC16,Safety preferences toggled (avoid traffic lights),"Route recalculates with adjusted parameters, polyline updates visually",Critical,Manual,No,Owner
+TC17,Safety preferences toggled (avoid highways),"Route avoids highway segments, confirmation message displayed",Critical,Manual,No,Owner
+TC18,Safety preferences toggled (avoid steep hills),"Route penalises steep gradients, hill count visible in summary",Critical,Manual,No,Owner
+TC19,TalkBack announces all buttons correctly,"Each button read aloud with meaningful description (not 'button1')",Critical,Manual,No,Owner
+TC20,TalkBack navigates through route summary,"Distance, duration, safety flags read in logical sequence",High,Manual,No,Owner
+TC21,EN-AU language strings render correctly,"All UI elements display in Australian English, no placeholder text",Medium,Manual,No,ASAI
+TC22,DE language strings render correctly,"German translation displays without encoding issues (umlauts)",Medium,Manual,No,ASAI
+TC23,ZH language strings render correctly,"Chinese characters display correctly, no mojibake",Medium,Manual,No,ASAI
+TC24,APK size <15 MB,"Build artifact inspection confirms target met, no large assets embedded",Critical,Manual,Yes,ASAI
+TC25,Route calculation timeout >10 seconds,"Timeout error shown, user can retry without losing input",Critical,Manual,Yes,ASAI
+TC26,App launches without crash on cold start,"MainActivity displays city selection dropdown within 3 seconds",Critical,Manual,Yes,ASAI
+TC27,App survives configuration change (rotation),"Route data preserved, no recalculation required after rotation",High,Manual,Yes,ASAI
+TC28,App resumes from background,"Previous route state restored, no data loss",High,Manual,Yes,ASAI
+TC29,Preference changes persist after restart,"Selected city, safety prefs, language survive app termination",High,Manual,Yes,ASAI
+TC30,Concurrent route requests blocked,"Only one route calculation at a time, subsequent requests queued",Medium,Manual,No,ASAI

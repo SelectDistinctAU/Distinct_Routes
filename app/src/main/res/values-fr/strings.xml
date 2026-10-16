@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Distinct Routes</string>
+    <string name="disclaimer_safety_banner">Préférences d\'itinéraire axées sur la sécurité disponibles ; données BBBike. Évaluez toujours les conditions locales avant de rouler.</string>
+    <string name="btn_calculate_route">Calculer un itinéraire sécurisé</string>
+    <string name="btn_open_osmand">Ouvrir dans le navigateur OsmAnd</string>
+    <string name="title_select_city">Sélectionner la ville BBBike</string>
+    <string name="title_waypoints">Planificateur</string>
+    <string name="title_favourites">Favoris</string>
+    <string name="title_safety_preferences">Sécurité et préférences de conduite</string>
+    <string name="btn_current_gps">Utiliser la position GPS actuelle</string>
+    <string name="label_wheelchair">Fauteuil roulant / Handbike</string>
+    <string name="label_mobility_scooter">Scooter PMR</string>
+    <string name="msg_gps_denied">Autorisation de localisation refusée ; saisie manuelle de l\'adresse requise.</string>
+    <string name="cd_start_pin">Point de départ (Drapeau A)</string>
+    <string name="cd_end_pin">Point d\'arrivée (Drapeau B)</string>
+    <string name="btn_add_via_stop">Ajouter une étape sur le trajet (Via)</string>
+    <string name="btn_remove_via_stop">Supprimer l\'étape</string>
+    <string name="title_via_stop">Via (Étape)</string>
+    <string name="cd_via_pin">Étape Via (Point jaune ●)</string>
+    <string name="title_settings">Paramètres</string>
+    <string name="attr_flaticon">Icônes créées par Magnific - Flaticon</string>
+    <string name="attr_bbbike">Moteur d\'itinéraire propulsé par BBBike.org</string>
+    <string name="btn_save_favorite">Enregistrer dans les favoris</string>
+    <string name="btn_remove_favorite">Supprimer le favori</string>
+    <string name="btn_load_planner">Charger dans le planificateur</string>
+    <string name="msg_no_favorites">Aucun itinéraire enregistré. Planifiez un itinéraire et appuyez sur \'Enregistrer dans les favoris\'.</string>
+</resources>

@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Distinct Routes</string>
+    <string name="disclaimer_safety_banner">Safety-focused routing preferences available; data sourced from BBBike. Always assess local conditions before riding.</string>
+    <string name="btn_calculate_route">Calculate Safety-Focused Route</string>
+    <string name="btn_open_osmand">Export GPX / Navigate</string>
+    <string name="title_select_city">Select BBBike City</string>
+    <string name="title_waypoints">Route Planner</string>
+    <string name="title_favourites">Favorites</string>
+    <string name="title_safety_preferences">Safety &amp; Riding Preferences</string>
+    <string name="btn_current_gps">Use Current GPS</string>
+    <string name="label_wheelchair">Wheelchair / Handbike</string>
+    <string name="label_mobility_scooter">Mobility Scooter</string>
+    <string name="msg_gps_denied">Location permission denied; manual address entry required.</string>
+    <string name="cd_start_pin">Start Location (Flag A)</string>
+    <string name="cd_end_pin">Destination Location (Flag B)</string>
+    <string name="btn_add_via_stop">Add Stop Along the Way (Via)</string>
+    <string name="btn_remove_via_stop">Remove Stop</string>
+    <string name="title_via_stop">Via (Stop along the way)</string>
+    <string name="cd_via_pin">Via Stop (Yellow Dot ●)</string>
+    <string name="title_settings">Settings</string>
+    <string name="attr_flaticon">Pin icons created by Magnific - Flaticon</string>
+    <string name="attr_bbbike">Routing engine powered by BBBike.org</string>
+    <string name="btn_save_favorite">Save to Favorites</string>
+    <string name="btn_remove_favorite">Remove Favorite</string>
+    <string name="btn_load_planner">Load into Route Planner</string>
+    <string name="msg_no_favorites">No saved routes yet. Plan a route and tap \'Save to Favorites\' to save it here.</string>
+</resources>
