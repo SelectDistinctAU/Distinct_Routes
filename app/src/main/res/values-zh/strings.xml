@@ -2,7 +2,7 @@
     <string name="app_name">Distinct Routes</string>
     <string name="disclaimer_safety_banner">提供以安全为导向的路线偏好设置；数据源自 BBBike。骑行前请务必自行评估当地实际路况。</string>
     <string name="btn_calculate_route">计算安全导向路线</string>
-    <string name="btn_open_osmand">在 OsmAnd 导航中打开</string>
+    <string name="btn_open_osmand">导出 GPX / 导航</string>
     <string name="title_select_city">选择 BBBike 城市</string>
     <string name="title_waypoints">路线规划</string>
     <string name="title_favourites">收藏路线</string>
@@ -20,7 +20,7 @@
     <string name="title_settings">设置</string>
     <string name="attr_flaticon">图标由 Magnific - Flaticon 提供</string>
     <string name="attr_bbbike">路线引擎由 BBBike.org 提供支持</string>
-    <string name="btn_save_favorite">保存到收藏</string>
+    <string name="btn_save_favorite">保存收藏</string>
     <string name="btn_remove_favorite">移除收藏</string>
     <string name="btn_load_planner">加载到路线规划器</string>
     <string name="msg_no_favorites">暂无保存的路线。规划路线后点击“保存到收藏”即可保存在此。</string>

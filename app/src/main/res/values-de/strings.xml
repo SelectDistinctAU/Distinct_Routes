@@ -2,7 +2,7 @@
     <string name="app_name">Distinct Routes</string>
     <string name="disclaimer_safety_banner">Sicherheitsfokussierte Routenoptionen verfügbar; Daten von BBBike. Bitte prüfen Sie stets die örtlichen Bedingungen vor der Fahrt.</string>
     <string name="btn_calculate_route">Sicherheitsfokussierte Route berechnen</string>
-    <string name="btn_open_osmand">In OsmAnd Navigation öffnen</string>
+    <string name="btn_open_osmand">GPX Export / Navigieren</string>
     <string name="title_select_city">BBBike-Stadt auswählen</string>
     <string name="title_waypoints">Routenplaner</string>
     <string name="title_favourites">Favoriten</string>
@@ -20,7 +20,7 @@
     <string name="title_settings">Einstellungen</string>
     <string name="attr_flaticon">Pin-Icons von Magnific - Flaticon</string>
     <string name="attr_bbbike">Routing-Engine unterstützt von BBBike.org</string>
-    <string name="btn_save_favorite">Als Favorit speichern</string>
+    <string name="btn_save_favorite">Speichern</string>
     <string name="btn_remove_favorite">Favorit entfernen</string>
     <string name="btn_load_planner">In Routenplaner laden</string>
     <string name="msg_no_favorites">Noch keine gespeicherten Routen. Planen Sie eine Route und tippen Sie auf \'Als Favorit speichern\'.</string>

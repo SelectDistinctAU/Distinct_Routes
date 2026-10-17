@@ -2,7 +2,7 @@
     <string name="app_name">Distinct Routes</string>
     <string name="disclaimer_safety_banner">Préférences d\'itinéraire axées sur la sécurité disponibles ; données BBBike. Évaluez toujours les conditions locales avant de rouler.</string>
     <string name="btn_calculate_route">Calculer un itinéraire sécurisé</string>
-    <string name="btn_open_osmand">Ouvrir dans le navigateur OsmAnd</string>
+    <string name="btn_open_osmand">Exporter GPX / Naviguer</string>
     <string name="title_select_city">Sélectionner la ville BBBike</string>
     <string name="title_waypoints">Planificateur</string>
     <string name="title_favourites">Favoris</string>
@@ -20,7 +20,7 @@
     <string name="title_settings">Paramètres</string>
     <string name="attr_flaticon">Icônes créées par Magnific - Flaticon</string>
     <string name="attr_bbbike">Moteur d\'itinéraire propulsé par BBBike.org</string>
-    <string name="btn_save_favorite">Enregistrer dans les favoris</string>
+    <string name="btn_save_favorite">Sauvegarder</string>
     <string name="btn_remove_favorite">Supprimer le favori</string>
     <string name="btn_load_planner">Charger dans le planificateur</string>
     <string name="msg_no_favorites">Aucun itinéraire enregistré. Planifiez un itinéraire et appuyez sur \'Enregistrer dans les favoris\'.</string>

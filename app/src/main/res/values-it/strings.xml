@@ -2,7 +2,7 @@
     <string name="app_name">Distinct Routes</string>
     <string name="disclaimer_safety_banner">Preferenze di percorso orientate alla sicurezza disponibili; dati forniti da BBBike. Valutare sempre le condizioni locali prima di guidare.</string>
     <string name="btn_calculate_route">Calcola percorso sicuro</string>
-    <string name="btn_open_osmand">Apri nel navigatore OsmAnd</string>
+    <string name="btn_open_osmand">Esporta GPX / Naviga</string>
     <string name="title_select_city">Seleziona città BBBike</string>
     <string name="title_waypoints">Pianificatore</string>
     <string name="title_favourites">Preferiti</string>
@@ -20,7 +20,7 @@
     <string name="title_settings">Impostazioni</string>
     <string name="attr_flaticon">Icone create da Magnific - Flaticon</string>
     <string name="attr_bbbike">Motore di calcolo percorsi offerto da BBBike.org</string>
-    <string name="btn_save_favorite">Salva nei preferiti</string>
+    <string name="btn_save_favorite">Salva</string>
     <string name="btn_remove_favorite">Rimuovi preferito</string>
     <string name="btn_load_planner">Carica nel pianificatore</string>
     <string name="msg_no_favorites">Nessun percorso salvato. Calcola un percorso e tocca \'Salva nei preferiti\'.</string>

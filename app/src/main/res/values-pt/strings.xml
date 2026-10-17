@@ -2,7 +2,7 @@
     <string name="app_name">Distinct Routes</string>
     <string name="disclaimer_safety_banner">Preferências de rota focadas na segurança disponíveis; dados do BBBike. Avalie sempre as condições locais antes de pedalar.</string>
     <string name="btn_calculate_route">Calcular rota segura</string>
-    <string name="btn_open_osmand">Abrir no navegador OsmAnd</string>
+    <string name="btn_open_osmand">Exportar GPX / Navegar</string>
     <string name="title_select_city">Selecionar cidade BBBike</string>
     <string name="title_waypoints">Planejador</string>
     <string name="title_favourites">Favoritos</string>
@@ -20,7 +20,7 @@
     <string name="title_settings">Configurações</string>
     <string name="attr_flaticon">Ícones criados por Magnific - Flaticon</string>
     <string name="attr_bbbike">Motor de rotas fornecido por BBBike.org</string>
-    <string name="btn_save_favorite">Salvar nos favoritos</string>
+    <string name="btn_save_favorite">Salvar</string>
     <string name="btn_remove_favorite">Remover favorito</string>
     <string name="btn_load_planner">Carregar no planejador</string>
     <string name="msg_no_favorites">Nenhuma rota salva ainda. Planeje uma rota e toque em \'Salvar nos favoritos\'.</string>
