@@ -546,12 +546,16 @@ fun SettingToggleRow(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    contentDescription: String
+    contentDescription: String = ""
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .semantics { this.contentDescription = "$label toggle, currently ${if (checked) "enabled" else "disabled"}" },
+            .semantics {
+                this.contentDescription = contentDescription.ifEmpty {
+                    "$label toggle, currently ${if (checked) "enabled" else "disabled"}"
+                }
+            },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
