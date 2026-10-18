@@ -16,7 +16,8 @@ interface NominatimApiService {
         @Query("q") query: String,
         @Query("format") format: String = "json",
         @Query("limit") limit: Int = 5,
-        @Header("User-Agent") userAgent: String = "DistinctRoutes/0.1.0 (Android)"
+        @Query("accept-language") acceptLanguage: String = "en",
+        @Header("User-Agent") userAgent: String = "DistinctRoutes/0.1.0 (distinctroutes@pm.me; Android)"
     ): Response<List<GeocodeResultDto>>
 
     @GET("reverse")
@@ -24,7 +25,8 @@ interface NominatimApiService {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
         @Query("format") format: String = "json",
-        @Header("User-Agent") userAgent: String = "DistinctRoutes/0.1.0 (Android)"
+        @Query("accept-language") acceptLanguage: String = "en",
+        @Header("User-Agent") userAgent: String = "DistinctRoutes/0.1.0 (distinctroutes@pm.me; Android)"
     ): Response<ReverseGeocodeDto>
 }
 

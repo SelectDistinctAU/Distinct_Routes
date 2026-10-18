@@ -55,8 +55,8 @@ class RoutePlannerViewModel @Inject constructor(
 
     val isPreferencesExpanded = MutableStateFlow(false)
 
-    var startAddressText = MutableStateFlow("Alexanderplatz, Berlin")
-    var endAddressText = MutableStateFlow("Checkpoint Charlie, Berlin")
+    var startAddressText = MutableStateFlow("")
+    var endAddressText = MutableStateFlow("")
 
     val viaStops = MutableStateFlow<List<ViaStopData>>(emptyList())
 
@@ -64,31 +64,28 @@ class RoutePlannerViewModel @Inject constructor(
     val endSuggestions = MutableStateFlow<List<AddressLocation>>(emptyList())
     val viaSuggestions = MutableStateFlow<List<AddressLocation>>(emptyList())
 
-    var startLat: Double = 52.5200
-    var startLon: Double = 13.4050
-    var endLat: Double = 52.5074
-    var endLon: Double = 13.3904
+    var startLat: Double = -31.9505
+    var startLon: Double = 115.8605
+    var endLat: Double = -31.9505
+    var endLon: Double = 115.8605
 
     var selectedCity: String = preferencesStorage.getDefaultCity()
-
-    init {
-        calculateRoute()
-    }
 
     fun togglePreferencesExpanded() {
         isPreferencesExpanded.update { !it }
     }
 
-    fun addViaStop(address: String = "Gendarmenmarkt, Berlin", lat: Double = 52.5136, lon: Double = 13.3926) {
+    fun addViaStop(address: String = "", lat: Double = startLat, lon: Double = startLon) {
         viaStops.update { current ->
             current + ViaStopData(addressText = address, lat = lat, lon = lon)
         }
-        calculateRoute()
     }
 
     fun removeViaStop(id: String) {
         viaStops.update { current -> current.filter { it.id != id } }
-        calculateRoute()
+        if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+            calculateRoute()
+        }
     }
 
     fun moveViaStopUp(index: Int) {
@@ -97,7 +94,9 @@ class RoutePlannerViewModel @Inject constructor(
             val item = list.removeAt(index)
             list.add(index - 1, item)
             viaStops.value = list
-            calculateRoute()
+            if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+                calculateRoute()
+            }
         }
     }
 
@@ -107,7 +106,9 @@ class RoutePlannerViewModel @Inject constructor(
             val item = list.removeAt(index)
             list.add(index + 1, item)
             viaStops.value = list
-            calculateRoute()
+            if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+                calculateRoute()
+            }
         }
     }
 
@@ -124,7 +125,9 @@ class RoutePlannerViewModel @Inject constructor(
         endLat = tempLat
         endLon = tempLon
 
-        calculateRoute()
+        if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+            calculateRoute()
+        }
     }
 
     fun updateSafetyPreferences(
@@ -151,12 +154,18 @@ class RoutePlannerViewModel @Inject constructor(
                 bikeType = bikeType
             )
         }
-        calculateRoute()
+        if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+            calculateRoute()
+        }
     }
+
+    private var searchJob: kotlinx.coroutines.Job? = null
 
     fun searchAddress(query: String, field: String) {
         if (query.length < 3) return
-        viewModelScope.launch {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(350)
             geocodingUseCase.searchAddress(query).onSuccess { list ->
                 when (field) {
                     "start" -> startSuggestions.value = list
@@ -191,7 +200,9 @@ class RoutePlannerViewModel @Inject constructor(
                 viaSuggestions.value = emptyList()
             }
         }
-        calculateRoute()
+        if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+            calculateRoute()
+        }
     }
 
     fun useCurrentGpsLocation() {
@@ -204,7 +215,11 @@ class RoutePlannerViewModel @Inject constructor(
                 geocodingUseCase.reverseGeocode(location.lat, location.lon).onSuccess { address ->
                     startAddressText.value = address
                 }
-                calculateRoute()
+                if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+                    calculateRoute()
+                } else {
+                    _uiState.value = RoutePlannerUiState.Idle
+                }
             } else {
                 _uiState.value = RoutePlannerUiState.Error("GPS location unavailable or permission denied")
             }
@@ -218,7 +233,9 @@ class RoutePlannerViewModel @Inject constructor(
             geocodingUseCase.reverseGeocode(lat, lon).onSuccess { address ->
                 startAddressText.value = address
             }
-            calculateRoute()
+            if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+                calculateRoute()
+            }
         }
     }
 
@@ -229,7 +246,9 @@ class RoutePlannerViewModel @Inject constructor(
             geocodingUseCase.reverseGeocode(lat, lon).onSuccess { address ->
                 endAddressText.value = address
             }
-            calculateRoute()
+            if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+                calculateRoute()
+            }
         }
     }
 
@@ -243,12 +262,19 @@ class RoutePlannerViewModel @Inject constructor(
                 geocodingUseCase.reverseGeocode(lat, lon).onSuccess { address ->
                     stop.addressText = address
                 }
-                calculateRoute()
+                if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
+                    calculateRoute()
+                }
             }
         }
     }
 
     fun calculateRoute() {
+        if (startAddressText.value.isBlank() || endAddressText.value.isBlank()) {
+            _uiState.value = RoutePlannerUiState.Error("Please enter both a Start and Destination address.")
+            return
+        }
+
         viewModelScope.launch {
             _uiState.value = RoutePlannerUiState.Loading
             val result = calculateRouteUseCase.execute(

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -21,7 +22,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
@@ -58,7 +58,7 @@ fun MapViewContainer(
     AndroidView(
         factory = { ctx ->
             Configuration.getInstance().load(ctx, ctx.getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
-            Configuration.getInstance().userAgentValue = "DistinctRoutes/0.1.0 (Android)"
+            Configuration.getInstance().userAgentValue = "DistinctRoutes/0.1.0 (distinctroutes@pm.me; Android)"
 
             MapView(ctx).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
@@ -76,6 +76,7 @@ fun MapViewContainer(
         modifier = modifier
             .fillMaxWidth()
             .height(280.dp)
+            .clipToBounds()
             .semantics {
                 contentDescription = "Interactive OpenStreetMap view showing Start, Destination, and optional Via Stop pins"
             },
@@ -101,13 +102,6 @@ fun MapViewContainer(
                     setPoints(geoPoints)
                 }
                 map.overlays.add(polyline)
-
-                try {
-                    val boundingBox = BoundingBox.fromGeoPoints(geoPoints)
-                    map.zoomToBoundingBox(boundingBox, true, 80)
-                } catch (e: Exception) {
-                    map.controller.setCenter(startPoint)
-                }
             } else {
                 map.controller.setCenter(startPoint)
             }
