@@ -93,7 +93,29 @@ class LocationHelper @Inject constructor(
             } else {
                 LocationManager.NETWORK_PROVIDER
             }
-            locationManager.requestSingleUpdate(provider, listener, null)
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                locationManager.getCurrentLocation(
+                    provider,
+                    null,
+                    context.mainExecutor
+                ) { location ->
+                    if (location != null && continuation.isActive) {
+                        continuation.resume(
+                            GpsLocationResult(
+                                lat = location.latitude,
+                                lon = location.longitude,
+                                accuracyMeters = location.accuracy
+                            )
+                        )
+                    } else if (continuation.isActive) {
+                        continuation.resume(null)
+                    }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                locationManager.requestSingleUpdate(provider, listener, null)
+            }
         } catch (e: SecurityException) {
             if (continuation.isActive) continuation.resume(null)
         }
