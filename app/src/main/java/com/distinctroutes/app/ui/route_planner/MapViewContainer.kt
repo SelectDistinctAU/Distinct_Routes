@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -74,8 +75,7 @@ fun MapViewContainer(
             }
         },
         modifier = modifier
-            .fillMaxWidth()
-            .height(280.dp)
+            .fillMaxSize()
             .clipToBounds()
             .semantics {
                 contentDescription = "Interactive OpenStreetMap view showing Start, Destination, and optional Via Stop pins"

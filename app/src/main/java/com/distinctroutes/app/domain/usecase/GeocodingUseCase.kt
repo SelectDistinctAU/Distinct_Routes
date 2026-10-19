@@ -21,7 +21,7 @@ class GeocodingUseCase @Inject constructor(
                     val lon = dto.lon.toDoubleOrNull()
                     if (lat != null && lon != null) {
                         AddressLocation(
-                            displayName = dto.display_name,
+                            displayName = formatShortAddress(dto.display_name),
                             lat = lat,
                             lon = lon
                         )
@@ -39,13 +39,37 @@ class GeocodingUseCase @Inject constructor(
     suspend fun reverseGeocode(lat: Double, lon: Double): Result<String> {
         return try {
             val response = nominatimApiService.reverseGeocode(lat = lat, lon = lon)
-            if (response.isSuccessful && response.body()?.display_name != null) {
-                Result.success(response.body()!!.display_name!!)
+            val name = response.body()?.display_name
+            if (response.isSuccessful && !name.isNullOrBlank()) {
+                Result.success(formatShortAddress(name))
             } else {
                 Result.success("Location near (%.4f, %.4f)".format(lat, lon))
             }
         } catch (e: Exception) {
             Result.success("Location near (%.4f, %.4f)".format(lat, lon))
         }
+    }
+
+    fun formatShortAddress(fullAddress: String): String {
+        if (fullAddress.isBlank()) return fullAddress
+        val parts = fullAddress.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        if (parts.isEmpty()) return fullAddress
+
+        // Extract up to first 3 significant place components, filtering postal codes and country names
+        val shortParts = mutableListOf<String>()
+        for (part in parts) {
+            if (part.matches(Regex("^\\d{4,6}$")) ||
+                part.equals("Australia", true) ||
+                part.equals("Deutschland", true) ||
+                part.equals("United Kingdom", true) ||
+                part.equals("Germany", true)
+            ) {
+                continue
+            }
+            shortParts.add(part)
+            if (shortParts.size >= 3) break
+        }
+
+        return if (shortParts.isNotEmpty()) shortParts.joinToString(", ") else parts.take(2).joinToString(", ")
     }
 }

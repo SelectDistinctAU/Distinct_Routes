@@ -22,8 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Accessible
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
@@ -58,7 +56,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -80,6 +77,7 @@ import com.distinctroutes.app.R
 import com.distinctroutes.app.domain.model.BikeType
 import com.distinctroutes.app.domain.model.FavoriteRoute
 import com.distinctroutes.app.ui.favorites.FavoritesViewModel
+import com.distinctroutes.app.ui.theme.CardShape
 import com.distinctroutes.app.ui.theme.PillShape
 import kotlinx.coroutines.delay
 
@@ -134,36 +132,393 @@ fun RoutePlannerScreen(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
+        // ==========================================
+        // 100% FULL-SCREEN MAP CANVAS BACKGROUND
+        // ==========================================
+        MapViewContainer(
+            startLat = viewModel.startLat,
+            startLon = viewModel.startLon,
+            endLat = viewModel.endLat,
+            endLon = viewModel.endLon,
+            viaWaypoints = viaStops.map { Pair(it.lat, it.lon) },
+            routePoints = (uiState as? RoutePlannerUiState.Success)?.route?.polylinePoints ?: emptyList(),
+            onStartPinMoved = { lat, lon -> viewModel.onStartPinMoved(lat, lon) },
+            onEndPinMoved = { lat, lon -> viewModel.onEndPinMoved(lat, lon) },
+            onViaPinMoved = { idx, lat, lon -> viewModel.onViaPinMoved(idx, lat, lon) },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // ==========================================
+        // TOP FLOATING OVERLAY CARD: Inputs & Preferences
+        // ==========================================
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Top Header Branding Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)),
+                shape = CardShape,
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Image(
-                    painter = painterResource(R.drawable.direct_route),
-                    contentDescription = "Distinct Routes logo",
-                    modifier = Modifier.size(36.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Header Logo Bar
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.direct_route),
+                            contentDescription = "Distinct Routes logo",
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    // FIRST CHOICE: Vehicle / Mobility Device Selector
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { bikeTypeDropdownExpanded = true }
+                    ) {
+                        OutlinedTextField(
+                            value = preferences.bikeType.displayName,
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = false,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.primary,
+                                disabledLabelColor = MaterialTheme.colorScheme.primary
+                            ),
+                            label = { Text("Selected Vehicle / Mobility Device", fontWeight = FontWeight.Bold) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = if (preferences.isMobilityDevice()) Icons.AutoMirrored.Filled.Accessible else Icons.AutoMirrored.Filled.DirectionsBike,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            trailingIcon = {
+                                Row(
+                                    modifier = Modifier.padding(end = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = "Expand vehicle choices list",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { bikeTypeDropdownExpanded = true }
+                                .semantics { contentDescription = "Vehicle selection: ${preferences.bikeType.displayName}. Tap to change profile." }
+                        )
+                        DropdownMenu(
+                            expanded = bikeTypeDropdownExpanded,
+                            onDismissRequest = { bikeTypeDropdownExpanded = false }
+                        ) {
+                            BikeType.entries.forEach { bikeType ->
+                                DropdownMenuItem(
+                                    text = { Text(bikeType.displayName) },
+                                    onClick = {
+                                        viewModel.updateSafetyPreferences(bikeType = bikeType)
+                                        bikeTypeDropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // START Address Input with Inline GPS Target Icon
+                    Box {
+                        OutlinedTextField(
+                            value = startAddress,
+                            onValueChange = {
+                                viewModel.startAddressText.value = it
+                                viewModel.searchAddress(it, field = "start")
+                            },
+                            label = { Text("Start Address or Place") },
+                            leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = "Start Flag A icon") },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        if (viewModel.locationHelper.hasLocationPermission()) {
+                                            viewModel.useCurrentGpsLocation()
+                                        } else {
+                                            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MyLocation,
+                                        contentDescription = "Use current GPS location",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics { contentDescription = "Start address input. Current value: $startAddress" }
+                        )
+
+                        DropdownMenu(
+                            expanded = startSuggestions.isNotEmpty(),
+                            onDismissRequest = { viewModel.startSuggestions.value = emptyList() }
+                        ) {
+                            startSuggestions.forEach { location ->
+                                DropdownMenuItem(
+                                    text = { Text(location.displayName) },
+                                    onClick = { viewModel.selectAddressSuggestion(location, field = "start") }
+                                )
+                            }
+                        }
+                    }
+
+                    // Multi-Stop VIA Waypoints
+                    viaStops.forEachIndexed { index, stop ->
+                        Box {
+                            OutlinedTextField(
+                                value = stop.addressText,
+                                onValueChange = { newAddr ->
+                                    stop.addressText = newAddr
+                                    viewModel.searchAddress(newAddr, field = stop.id)
+                                },
+                                label = { Text("Via Stop #${index + 1} Address") },
+                                leadingIcon = { Icon(Icons.Default.Place, contentDescription = "Yellow Via Stop Dot icon") },
+                                trailingIcon = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (index > 0) {
+                                            IconButton(onClick = { viewModel.moveViaStopUp(index) }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.ArrowUpward,
+                                                    contentDescription = "Move Via stop #${index + 1} up",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+                                        if (index < viaStops.size - 1) {
+                                            IconButton(onClick = { viewModel.moveViaStopDown(index) }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.ArrowDownward,
+                                                    contentDescription = "Move Via stop #${index + 1} down",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+                                        IconButton(onClick = { viewModel.removeViaStop(stop.id) }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Remove Via stop #${index + 1}",
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            DropdownMenu(
+                                expanded = viaSuggestions.isNotEmpty(),
+                                onDismissRequest = { viewModel.viaSuggestions.value = emptyList() }
+                            ) {
+                                viaSuggestions.forEach { location ->
+                                    DropdownMenuItem(
+                                        text = { Text(location.displayName) },
+                                        onClick = { viewModel.selectAddressSuggestion(location, field = stop.id) }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Add Stop OutlinedButton
+                    OutlinedButton(
+                        onClick = { viewModel.addViaStop() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .semantics { contentDescription = "Add mid-point via stop button" }
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (viaStops.isEmpty()) stringResource(R.string.btn_add_via_stop) else "Add Another Stop (Trail/Loop)",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+
+                    // DESTINATION Address Input with Swap Button
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            OutlinedTextField(
+                                value = endAddress,
+                                onValueChange = {
+                                    viewModel.endAddressText.value = it
+                                    viewModel.searchAddress(it, field = "end")
+                                },
+                                label = { Text("Destination Address or Place") },
+                                leadingIcon = { Icon(Icons.Default.Flag, contentDescription = "Destination Flag B icon") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics { contentDescription = "Destination address input. Current value: $endAddress" }
+                            )
+
+                            DropdownMenu(
+                                expanded = endSuggestions.isNotEmpty(),
+                                onDismissRequest = { viewModel.endSuggestions.value = emptyList() }
+                            ) {
+                                endSuggestions.forEach { location ->
+                                    DropdownMenuItem(
+                                        text = { Text(location.displayName) },
+                                        onClick = { viewModel.selectAddressSuggestion(location, field = "end") }
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(4.dp))
+                        IconButton(
+                            onClick = { viewModel.swapStartAndEnd() },
+                            modifier = Modifier.semantics { contentDescription = "Swap Start and Destination addresses" }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SwapVert,
+                                contentDescription = "Swap Start and Destination",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    // Collapsible Safety Preferences
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics {
+                                contentDescription = "Safety and Riding Preferences accordion card. Tap to ${if (isPreferencesExpanded) "collapse" else "expand"}."
+                            },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.togglePreferencesExpanded() },
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.title_safety_preferences),
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    val activeSummary = buildList {
+                                        if (preferences.hasDogTrailer) add("Dog Trailer")
+                                        if (preferences.preferGreenRoutes) add("Green Routes")
+                                        if (preferences.avoidUnlitStreets) add("Night Safety")
+                                        if (preferences.avoidCobblestones) add("Smooth Surface")
+                                        if (preferences.avoidHighways) add("Avoids Highways")
+                                        if (preferences.effectiveAvoidSteepHills()) add("Avoids Hills")
+                                    }.joinToString(" • ").ifEmpty { "Default Safety Settings" }
+
+                                    Text(
+                                        text = activeSummary,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Icon(
+                                    imageVector = if (isPreferencesExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                    contentDescription = if (isPreferencesExpanded) "Collapse preferences" else "Expand preferences"
+                                )
+                            }
+
+                            AnimatedVisibility(visible = isPreferencesExpanded) {
+                                Column(
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    SafetyToggleRow(
+                                        label = "Prefer Green & Scenic Routes",
+                                        checked = preferences.preferGreenRoutes,
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(preferGreenRoutes = it) },
+                                        contentDescription = "Toggle prefer green routes"
+                                    )
+
+                                    SafetyToggleRow(
+                                        label = "Avoid Unlit Streets (Night Safety)",
+                                        checked = preferences.avoidUnlitStreets,
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(avoidUnlitStreets = it) },
+                                        contentDescription = "Toggle avoid unlit streets"
+                                    )
+
+                                    SafetyToggleRow(
+                                        label = "Avoid Cobblestones / Unpaved Surface",
+                                        checked = preferences.avoidCobblestones,
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(avoidCobblestones = it) },
+                                        contentDescription = "Toggle avoid cobblestones"
+                                    )
+
+                                    SafetyToggleRow(
+                                        label = "Avoid Ferries",
+                                        checked = preferences.avoidFerries,
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(avoidFerries = it) },
+                                        contentDescription = "Toggle avoid ferries"
+                                    )
+
+                                    SafetyToggleRow(
+                                        label = "Avoid Traffic Lights",
+                                        checked = preferences.avoidTrafficLights,
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(avoidTrafficLights = it) },
+                                        contentDescription = "Toggle avoid traffic lights"
+                                    )
+
+                                    SafetyToggleRow(
+                                        label = "Avoid Highways",
+                                        checked = preferences.effectiveAvoidHighways(),
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(avoidHighways = it) },
+                                        contentDescription = "Toggle avoid highways"
+                                    )
+
+                                    SafetyToggleRow(
+                                        label = "Avoid Steep Hills",
+                                        checked = preferences.effectiveAvoidSteepHills(),
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(avoidSteepHills = it) },
+                                        contentDescription = "Toggle avoid steep hills"
+                                    )
+
+                                    SafetyToggleRow(
+                                        label = "Dog Trailer Mode (Weight Penalty)",
+                                        checked = preferences.hasDogTrailer,
+                                        onCheckedChange = { viewModel.updateSafetyPreferences(hasDogTrailer = it) },
+                                        contentDescription = "Toggle dog trailer mode weight penalty"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            // Disclaimer Banner with fade animation
+            // Disclaimer Banner
             AnimatedVisibility(
                 visible = showBanner,
                 enter = fadeIn() + expandVertically(),
@@ -179,7 +534,7 @@ fun RoutePlannerScreen(
                         }
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -197,353 +552,18 @@ fun RoutePlannerScreen(
                     }
                 }
             }
+        }
 
-            // FIRST CHOICE: Vehicle / Mobility Device Selector (Positioned at the very top)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { bikeTypeDropdownExpanded = true }
-            ) {
-                OutlinedTextField(
-                    value = preferences.bikeType.displayName,
-                    onValueChange = {},
-                    readOnly = true,
-                    enabled = false,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                        disabledBorderColor = MaterialTheme.colorScheme.primary,
-                        disabledLabelColor = MaterialTheme.colorScheme.primary
-                    ),
-                    label = { Text("Selected Vehicle / Mobility Device", fontWeight = FontWeight.Bold) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = if (preferences.isMobilityDevice()) Icons.AutoMirrored.Filled.Accessible else Icons.AutoMirrored.Filled.DirectionsBike,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    trailingIcon = {
-                        Row(
-                            modifier = Modifier.padding(end = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "Expand vehicle choices list",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { bikeTypeDropdownExpanded = true }
-                        .semantics { contentDescription = "Vehicle selection: ${preferences.bikeType.displayName}. Tap to change profile." }
-                )
-                DropdownMenu(
-                    expanded = bikeTypeDropdownExpanded,
-                    onDismissRequest = { bikeTypeDropdownExpanded = false }
-                ) {
-                    BikeType.entries.forEach { bikeType ->
-                        DropdownMenuItem(
-                            text = { Text(bikeType.displayName) },
-                            onClick = {
-                                viewModel.updateSafetyPreferences(bikeType = bikeType)
-                                bikeTypeDropdownExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            // START Address Input with Inline GPS Target Icon
-            Box {
-                OutlinedTextField(
-                    value = startAddress,
-                    onValueChange = {
-                        viewModel.startAddressText.value = it
-                        viewModel.searchAddress(it, field = "start")
-                    },
-                    label = { Text("Start Address or Place") },
-                    leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = "Start Flag A icon") },
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                if (viewModel.locationHelper.hasLocationPermission()) {
-                                    viewModel.useCurrentGpsLocation()
-                                } else {
-                                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MyLocation,
-                                contentDescription = "Use current GPS location",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { contentDescription = "Start address input. Current value: $startAddress" }
-                )
-
-                DropdownMenu(
-                    expanded = startSuggestions.isNotEmpty(),
-                    onDismissRequest = { viewModel.startSuggestions.value = emptyList() }
-                ) {
-                    startSuggestions.forEach { location ->
-                        DropdownMenuItem(
-                            text = { Text(location.displayName) },
-                            onClick = { viewModel.selectAddressSuggestion(location, field = "start") }
-                        )
-                    }
-                }
-            }
-
-            // Multi-Stop VIA Waypoints (Loops & Trails) with Up/Down Reorder Controls
-            viaStops.forEachIndexed { index, stop ->
-                Box {
-                    OutlinedTextField(
-                        value = stop.addressText,
-                        onValueChange = { newAddr ->
-                            stop.addressText = newAddr
-                            viewModel.searchAddress(newAddr, field = stop.id)
-                        },
-                        label = { Text("Via Stop #${index + 1} Address") },
-                        leadingIcon = { Icon(Icons.Default.Place, contentDescription = "Yellow Via Stop Dot icon") },
-                        trailingIcon = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (index > 0) {
-                                    IconButton(onClick = { viewModel.moveViaStopUp(index) }) {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowUpward,
-                                            contentDescription = "Move Via stop #${index + 1} up",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                                if (index < viaStops.size - 1) {
-                                    IconButton(onClick = { viewModel.moveViaStopDown(index) }) {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowDownward,
-                                            contentDescription = "Move Via stop #${index + 1} down",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                                IconButton(onClick = { viewModel.removeViaStop(stop.id) }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove Via stop #${index + 1}",
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    DropdownMenu(
-                        expanded = viaSuggestions.isNotEmpty(),
-                        onDismissRequest = { viewModel.viaSuggestions.value = emptyList() }
-                    ) {
-                        viaSuggestions.forEach { location ->
-                            DropdownMenuItem(
-                                text = { Text(location.displayName) },
-                                onClick = { viewModel.selectAddressSuggestion(location, field = stop.id) }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Full-Width OutlinedButton for Adding Stops (Matching Input Field Height)
-            OutlinedButton(
-                onClick = { viewModel.addViaStop() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .semantics { contentDescription = "Add mid-point via stop button" }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (viaStops.isEmpty()) stringResource(R.string.btn_add_via_stop) else "Add Another Stop (Trail/Loop)",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-
-            // DESTINATION Address Input with Swap Button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = endAddress,
-                        onValueChange = {
-                            viewModel.endAddressText.value = it
-                            viewModel.searchAddress(it, field = "end")
-                        },
-                        label = { Text("Destination Address or Place") },
-                        leadingIcon = { Icon(Icons.Default.Flag, contentDescription = "Destination Flag B icon") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .semantics { contentDescription = "Destination address input. Current value: $endAddress" }
-                    )
-
-                    DropdownMenu(
-                        expanded = endSuggestions.isNotEmpty(),
-                        onDismissRequest = { viewModel.endSuggestions.value = emptyList() }
-                    ) {
-                        endSuggestions.forEach { location ->
-                            DropdownMenuItem(
-                                text = { Text(location.displayName) },
-                                onClick = { viewModel.selectAddressSuggestion(location, field = "end") }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-                IconButton(
-                    onClick = { viewModel.swapStartAndEnd() },
-                    modifier = Modifier.semantics { contentDescription = "Swap Start and Destination addresses" }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SwapVert,
-                        contentDescription = "Swap Start and Destination",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            // Collapsible Safety & Riding Preferences
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics {
-                        contentDescription = "Safety and Riding Preferences accordion card. Tap to ${if (isPreferencesExpanded) "collapse" else "expand"}."
-                    },
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { viewModel.togglePreferencesExpanded() },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = stringResource(R.string.title_safety_preferences),
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            val activeSummary = buildList {
-                                if (preferences.hasDogTrailer) add("Dog Trailer")
-                                if (preferences.preferGreenRoutes) add("Green Routes")
-                                if (preferences.avoidUnlitStreets) add("Night Safety")
-                                if (preferences.avoidCobblestones) add("Smooth Surface")
-                                if (preferences.avoidHighways) add("Avoids Highways")
-                                if (preferences.effectiveAvoidSteepHills()) add("Avoids Hills")
-                            }.joinToString(" • ").ifEmpty { "Default Safety Settings" }
-
-                            Text(
-                                text = activeSummary,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        Icon(
-                            imageVector = if (isPreferencesExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (isPreferencesExpanded) "Collapse preferences" else "Expand preferences"
-                        )
-                    }
-
-                    AnimatedVisibility(visible = isPreferencesExpanded) {
-                        Column(
-                            modifier = Modifier.padding(top = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            SafetyToggleRow(
-                                label = "Prefer Green & Scenic Routes",
-                                checked = preferences.preferGreenRoutes,
-                                onCheckedChange = { viewModel.updateSafetyPreferences(preferGreenRoutes = it) },
-                                contentDescription = "Toggle prefer green routes"
-                            )
-
-                            SafetyToggleRow(
-                                label = "Avoid Unlit Streets (Night Safety)",
-                                checked = preferences.avoidUnlitStreets,
-                                onCheckedChange = { viewModel.updateSafetyPreferences(avoidUnlitStreets = it) },
-                                contentDescription = "Toggle avoid unlit streets"
-                            )
-
-                            SafetyToggleRow(
-                                label = "Avoid Cobblestones / Unpaved Surface",
-                                checked = preferences.avoidCobblestones,
-                                onCheckedChange = { viewModel.updateSafetyPreferences(avoidCobblestones = it) },
-                                contentDescription = "Toggle avoid cobblestones"
-                            )
-
-                            SafetyToggleRow(
-                                label = "Avoid Ferries",
-                                checked = preferences.avoidFerries,
-                                onCheckedChange = { viewModel.updateSafetyPreferences(avoidFerries = it) },
-                                contentDescription = "Toggle avoid ferries"
-                            )
-
-                            SafetyToggleRow(
-                                label = "Avoid Traffic Lights",
-                                checked = preferences.avoidTrafficLights,
-                                onCheckedChange = { viewModel.updateSafetyPreferences(avoidTrafficLights = it) },
-                                contentDescription = "Toggle avoid traffic lights"
-                            )
-
-                            SafetyToggleRow(
-                                label = "Avoid Highways",
-                                checked = preferences.effectiveAvoidHighways(),
-                                onCheckedChange = { viewModel.updateSafetyPreferences(avoidHighways = it) },
-                                contentDescription = "Toggle avoid highways"
-                            )
-
-                            SafetyToggleRow(
-                                label = "Avoid Steep Hills",
-                                checked = preferences.effectiveAvoidSteepHills(),
-                                onCheckedChange = { viewModel.updateSafetyPreferences(avoidSteepHills = it) },
-                                contentDescription = "Toggle avoid steep hills"
-                            )
-
-                            SafetyToggleRow(
-                                label = "Dog Trailer Mode (Weight Penalty)",
-                                checked = preferences.hasDogTrailer,
-                                onCheckedChange = { viewModel.updateSafetyPreferences(hasDogTrailer = it) },
-                                contentDescription = "Toggle dog trailer mode weight penalty"
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Interactive Map View with Pin Dropping
-            Text(
-                text = "Interactive Map Pin Placement",
-                style = MaterialTheme.typography.titleMedium
-            )
-            MapViewContainer(
-                startLat = viewModel.startLat,
-                startLon = viewModel.startLon,
-                endLat = viewModel.endLat,
-                endLon = viewModel.endLon,
-                viaWaypoints = viaStops.map { Pair(it.lat, it.lon) },
-                routePoints = (uiState as? RoutePlannerUiState.Success)?.route?.polylinePoints ?: emptyList(),
-                onStartPinMoved = { lat, lon -> viewModel.onStartPinMoved(lat, lon) },
-                onEndPinMoved = { lat, lon -> viewModel.onEndPinMoved(lat, lon) },
-                onViaPinMoved = { idx, lat, lon -> viewModel.onViaPinMoved(idx, lat, lon) }
-            )
-
+        // ==========================================
+        // BOTTOM FLOATING OVERLAY CARD: CTA & Results
+        // ==========================================
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             // Prominent M3 Expressive Pill-Shaped Calculate Route Button
             Button(
                 onClick = { viewModel.calculateRoute() },
@@ -552,9 +572,10 @@ fun RoutePlannerScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp)
+                    .height(52.dp)
                     .semantics { contentDescription = "Calculate safety-focused route button" }
             ) {
                 Text(
@@ -568,28 +589,35 @@ fun RoutePlannerScreen(
             when (uiState) {
                 is RoutePlannerUiState.Idle -> {}
                 is RoutePlannerUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.semantics { contentDescription = "Calculating route, please wait" }
-                        )
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)),
+                        shape = CardShape,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.semantics { contentDescription = "Calculating route, please wait" }
+                            )
+                        }
                     }
                 }
                 is RoutePlannerUiState.Success -> {
                     val route = (uiState as RoutePlannerUiState.Success).route
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.95f)),
+                        shape = CardShape,
                         modifier = Modifier
                             .fillMaxWidth()
                             .semantics { contentDescription = "Route calculated successfully. Distance ${route.distanceKm} kilometers, duration ${route.durationMinutes} minutes." },
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.padding(14.dp)) {
                             Text(text = route.name, style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text("Distance: ${"%.2f".format(route.distanceKm)} km")
-                            Text("Est. Duration: ${route.durationMinutes} mins")
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Distance: ${"%.2f".format(route.distanceKm)} km • Est: ${route.durationMinutes} mins")
                             Text("Safety Summary: ${route.safetySummary}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -650,7 +678,7 @@ fun RoutePlannerScreen(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(6.dp))
                             Button(
                                 onClick = {
                                     val shareIntent = viewModel.getNavigationShareIntent(route)
@@ -673,6 +701,7 @@ fun RoutePlannerScreen(
                     val errorMsg = (uiState as RoutePlannerUiState.Error).message
                     Card(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        shape = CardShape,
                         modifier = Modifier
                             .fillMaxWidth()
                             .semantics { contentDescription = "Error calculating route: $errorMsg" }
@@ -687,14 +716,14 @@ fun RoutePlannerScreen(
             }
         }
 
-        // Floating Material 3 Pill Snackbar Overlay Anchored at Bottom Center
+        // Floating Material 3 Pill Snackbar Overlay
         AnimatedVisibility(
             visible = showSavedSnackbar,
             enter = fadeIn() + expandVertically(),
             exit = fadeOut() + shrinkVertically(),
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp)
+                .align(Alignment.Center)
+                .padding(horizontal = 16.dp)
         ) {
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
