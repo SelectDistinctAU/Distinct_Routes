@@ -169,7 +169,7 @@ This policy may be updated to reflect:
 
 ## CONTACT INFORMATION & WEB POLICY STATEMENT
 
-- **Official Web Privacy Policy:** `https://selectdistinct.au/privacy-policy-distinct-routes`
+- **Official Privacy Policy URL:** `https://github.com/SelectDistinctAU/Distinct_Routes/blob/main/02_Specifications/USER_PRIVACY_POLICY.md`
 - **Privacy Inquiries:** `distinctroutes@pm.me`
 - **Bug Reports & Feedback:** GitHub Issues (public)
 - **Website:** `https://selectdistinct.au`

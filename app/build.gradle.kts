@@ -13,8 +13,8 @@ android {
         applicationId = "com.distinctroutes.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.2.0-alpha"
+        versionCode = 4
+        versionName = "0.2.0-alpha.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
