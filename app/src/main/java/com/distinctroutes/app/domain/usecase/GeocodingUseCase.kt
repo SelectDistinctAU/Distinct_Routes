@@ -12,9 +12,15 @@ data class AddressLocation(
 class GeocodingUseCase @Inject constructor(
     private val nominatimApiService: NominatimApiService
 ) {
-    suspend fun searchAddress(query: String): Result<List<AddressLocation>> {
+    suspend fun searchAddress(query: String, cityContext: String? = null): Result<List<AddressLocation>> {
         return try {
-            val response = nominatimApiService.searchAddress(query = query)
+            val scopedQuery = if (!cityContext.isNullOrBlank() && !query.contains(cityContext, ignoreCase = true)) {
+                "$query, $cityContext"
+            } else {
+                query
+            }
+
+            val response = nominatimApiService.searchAddress(query = scopedQuery)
             if (response.isSuccessful && response.body() != null) {
                 val locations = response.body()!!.mapNotNull { dto ->
                     val lat = dto.lat.toDoubleOrNull()

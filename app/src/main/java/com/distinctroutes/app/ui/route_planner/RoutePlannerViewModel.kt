@@ -166,7 +166,7 @@ class RoutePlannerViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             kotlinx.coroutines.delay(350)
-            geocodingUseCase.searchAddress(query).onSuccess { list ->
+            geocodingUseCase.searchAddress(query = query, cityContext = selectedCity).onSuccess { list ->
                 when (field) {
                     "start" -> startSuggestions.value = list
                     "end" -> endSuggestions.value = list
