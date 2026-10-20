@@ -14,13 +14,18 @@ class GeocodingUseCase @Inject constructor(
 ) {
     suspend fun searchAddress(query: String, cityContext: String? = null): Result<List<AddressLocation>> {
         return try {
+            val viewbox = if (!cityContext.isNullOrBlank()) getCityViewbox(cityContext) else null
             val scopedQuery = if (!cityContext.isNullOrBlank() && !query.contains(cityContext, ignoreCase = true)) {
                 "$query, $cityContext"
             } else {
                 query
             }
 
-            val response = nominatimApiService.searchAddress(query = scopedQuery)
+            val response = nominatimApiService.searchAddress(
+                query = scopedQuery,
+                viewbox = viewbox,
+                bounded = if (viewbox != null) 1 else null
+            )
             if (response.isSuccessful && response.body() != null) {
                 val locations = response.body()!!.mapNotNull { dto ->
                     val lat = dto.lat.toDoubleOrNull()
@@ -53,6 +58,23 @@ class GeocodingUseCase @Inject constructor(
             }
         } catch (e: Exception) {
             Result.success("Location near (%.4f, %.4f)".format(lat, lon))
+        }
+    }
+
+    fun getCityViewbox(city: String): String? {
+        return when (city.lowercase().trim()) {
+            "perth" -> "115.5,-32.4,116.2,-31.5"
+            "berlin" -> "13.0,52.3,13.8,52.7"
+            "canberra" -> "149.0,-35.5,149.3,-35.1"
+            "sydney" -> "150.8,-34.1,151.4,-33.5"
+            "melbourne" -> "144.7,-38.1,145.4,-37.5"
+            "brisbane" -> "152.8,-27.7,153.3,-27.2"
+            "adelaide" -> "138.4,-35.1,138.8,-34.7"
+            "london" -> "-0.5,51.2,0.3,51.7"
+            "paris" -> "2.1,48.7,2.5,49.0"
+            "rome" -> "12.3,41.7,12.7,42.0"
+            "madrid" -> "-3.9,40.3,-3.5,40.6"
+            else -> null
         }
     }
 

@@ -167,7 +167,7 @@ fun RoutePlannerScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 430.dp)
+                    .heightIn(max = 520.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -463,6 +463,12 @@ fun RoutePlannerScreen(
                                     modifier = Modifier.padding(top = 8.dp),
                                     verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
+                                    Text(
+                                        text = "Scroll for more safety options ↓",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(bottom = 2.dp)
+                                    )
                                     SafetyToggleRow(
                                         label = "Prefer Green & Scenic Routes",
                                         checked = preferences.preferGreenRoutes,

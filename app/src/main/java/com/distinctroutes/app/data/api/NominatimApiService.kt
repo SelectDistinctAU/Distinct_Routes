@@ -15,8 +15,10 @@ interface NominatimApiService {
     suspend fun searchAddress(
         @Query("q") query: String,
         @Query("format") format: String = "json",
-        @Query("limit") limit: Int = 5,
+        @Query("limit") limit: Int = 8,
         @Query("accept-language") acceptLanguage: String = "en",
+        @Query("viewbox") viewbox: String? = null,
+        @Query("bounded") bounded: Int? = if (viewbox != null) 1 else null,
         @Header("User-Agent") userAgent: String = "DistinctRoutes/0.1.0 (distinctroutes@pm.me; Android)"
     ): Response<List<GeocodeResultDto>>
 
