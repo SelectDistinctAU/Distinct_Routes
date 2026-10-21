@@ -29,6 +29,10 @@ class CalculateRouteUseCase @Inject constructor(
             endLon = endLon,
             viaWaypoints = viaWaypoints,
             profile = preferences.bikeType.profileName,
+            preferResidentialRoads = preferences.preferResidentialRoads,
+            useFerries = preferences.useFerries,
+            preferredSpeedKmH = preferences.preferredSpeedKmH,
+            roadSurfaceQuality = preferences.roadSurfaceQuality,
             avoidTrafficLights = preferences.avoidTrafficLights,
             avoidHighways = preferences.effectiveAvoidHighways(),
             avoidSteepHills = preferences.effectiveAvoidSteepHills(),
@@ -65,10 +69,9 @@ class CalculateRouteUseCase @Inject constructor(
                 if (viaWaypoints.isNotEmpty()) {
                     summaryParts.add("${viaWaypoints.size} Via Stop${if (viaWaypoints.size > 1) "s" else ""} Included")
                 }
+                if (preferences.preferResidentialRoads == "N1") summaryParts.add("Prefers quiet residential roads")
+                if (preferences.useFerries) summaryParts.add("Uses ferries")
                 if (preferences.preferGreenRoutes) summaryParts.add("Prefers green/scenic routes")
-                if (preferences.avoidUnlitStreets) summaryParts.add("Avoids unlit streets")
-                if (preferences.avoidCobblestones) summaryParts.add("Avoids cobblestones/rough surface")
-                if (preferences.avoidFerries) summaryParts.add("Avoids ferries")
                 if (preferences.avoidTrafficLights) summaryParts.add("Avoids traffic lights")
                 if (preferences.effectiveAvoidHighways()) summaryParts.add("Avoids highways")
                 if (preferences.effectiveAvoidSteepHills()) summaryParts.add("Avoids steep hills")

@@ -322,6 +322,13 @@ fun SettingsScreen(
                 )
 
                 SettingToggleRow(
+                    label = "Prefer Residential Roads / Quiet Streets",
+                    checked = preferences.preferResidentialRoads == "N1",
+                    onCheckedChange = { viewModel.updateSafetyPreferences(preferResidentialRoads = if (it) "N1" else "") },
+                    contentDescription = "Toggle default prefer residential roads"
+                )
+
+                SettingToggleRow(
                     label = "Prefer Green & Scenic Routes",
                     checked = preferences.preferGreenRoutes,
                     onCheckedChange = { viewModel.updateSafetyPreferences(preferGreenRoutes = it) },
@@ -343,10 +350,10 @@ fun SettingsScreen(
                 )
 
                 SettingToggleRow(
-                    label = "Avoid Ferries",
-                    checked = preferences.avoidFerries,
-                    onCheckedChange = { viewModel.updateSafetyPreferences(avoidFerries = it) },
-                    contentDescription = "Toggle default avoid ferries"
+                    label = "Use Ferries",
+                    checked = preferences.useFerries,
+                    onCheckedChange = { viewModel.updateSafetyPreferences(useFerries = it) },
+                    contentDescription = "Toggle default use ferries"
                 )
 
                 SettingToggleRow(

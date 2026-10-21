@@ -131,6 +131,10 @@ class RoutePlannerViewModel @Inject constructor(
     }
 
     fun updateSafetyPreferences(
+        preferResidentialRoads: String = _preferences.value.preferResidentialRoads,
+        useFerries: Boolean = _preferences.value.useFerries,
+        preferredSpeedKmH: Int = _preferences.value.preferredSpeedKmH,
+        roadSurfaceQuality: String = _preferences.value.roadSurfaceQuality,
         avoidTrafficLights: Boolean = _preferences.value.avoidTrafficLights,
         avoidHighways: Boolean = _preferences.value.avoidHighways,
         avoidSteepHills: Boolean = _preferences.value.avoidSteepHills,
@@ -138,11 +142,14 @@ class RoutePlannerViewModel @Inject constructor(
         preferGreenRoutes: Boolean = _preferences.value.preferGreenRoutes,
         avoidUnlitStreets: Boolean = _preferences.value.avoidUnlitStreets,
         avoidCobblestones: Boolean = _preferences.value.avoidCobblestones,
-        avoidFerries: Boolean = _preferences.value.avoidFerries,
         bikeType: BikeType = _preferences.value.bikeType
     ) {
         _preferences.update {
             it.copy(
+                preferResidentialRoads = preferResidentialRoads,
+                useFerries = useFerries,
+                preferredSpeedKmH = preferredSpeedKmH,
+                roadSurfaceQuality = roadSurfaceQuality,
                 avoidTrafficLights = avoidTrafficLights,
                 avoidHighways = avoidHighways,
                 avoidSteepHills = avoidSteepHills,
@@ -150,7 +157,6 @@ class RoutePlannerViewModel @Inject constructor(
                 preferGreenRoutes = preferGreenRoutes,
                 avoidUnlitStreets = avoidUnlitStreets,
                 avoidCobblestones = avoidCobblestones,
-                avoidFerries = avoidFerries,
                 bikeType = bikeType
             )
         }

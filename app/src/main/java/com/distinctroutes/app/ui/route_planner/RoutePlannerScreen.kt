@@ -548,6 +548,13 @@ fun RoutePlannerScreen(
                                         )
 
                                         SafetyToggleRow(
+                                            label = "Prefer Residential Roads / Quiet Streets",
+                                            checked = preferences.preferResidentialRoads == "N1",
+                                            onCheckedChange = { viewModel.updateSafetyPreferences(preferResidentialRoads = if (it) "N1" else "") },
+                                            contentDescription = "Toggle prefer residential roads"
+                                        )
+
+                                        SafetyToggleRow(
                                             label = "Prefer Green & Scenic Routes",
                                             checked = preferences.preferGreenRoutes,
                                             onCheckedChange = { viewModel.updateSafetyPreferences(preferGreenRoutes = it) },
@@ -569,10 +576,10 @@ fun RoutePlannerScreen(
                                         )
 
                                         SafetyToggleRow(
-                                            label = "Avoid Ferries",
-                                            checked = preferences.avoidFerries,
-                                            onCheckedChange = { viewModel.updateSafetyPreferences(avoidFerries = it) },
-                                            contentDescription = "Toggle avoid ferries"
+                                            label = "Use Ferries",
+                                            checked = preferences.useFerries,
+                                            onCheckedChange = { viewModel.updateSafetyPreferences(useFerries = it) },
+                                            contentDescription = "Toggle use ferries"
                                         )
 
                                         SafetyToggleRow(

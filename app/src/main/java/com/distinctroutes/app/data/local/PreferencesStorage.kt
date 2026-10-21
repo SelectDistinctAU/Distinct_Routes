@@ -54,6 +54,10 @@ class PreferencesStorage @Inject constructor(
         }
 
         return SafetyPreferences(
+            preferResidentialRoads = prefs.getString("key_prefer_residential_roads", "N1") ?: "N1",
+            useFerries = prefs.getBoolean("key_use_ferries", false),
+            preferredSpeedKmH = prefs.getInt("key_preferred_speed", 20),
+            roadSurfaceQuality = prefs.getString("key_road_surface", "") ?: "",
             avoidTrafficLights = prefs.getBoolean("key_avoid_traffic_lights", false),
             avoidHighways = prefs.getBoolean("key_avoid_highways", false),
             avoidSteepHills = prefs.getBoolean("key_avoid_steep_hills", false),
@@ -61,13 +65,16 @@ class PreferencesStorage @Inject constructor(
             preferGreenRoutes = prefs.getBoolean("key_prefer_green_routes", false),
             avoidUnlitStreets = prefs.getBoolean("key_avoid_unlit_streets", false),
             avoidCobblestones = prefs.getBoolean("key_avoid_cobblestones", false),
-            avoidFerries = prefs.getBoolean("key_avoid_ferries", false),
             bikeType = bikeType
         )
     }
 
     fun saveSafetyPreferences(preferences: SafetyPreferences) {
         prefs.edit()
+            .putString("key_prefer_residential_roads", preferences.preferResidentialRoads)
+            .putBoolean("key_use_ferries", preferences.useFerries)
+            .putInt("key_preferred_speed", preferences.preferredSpeedKmH)
+            .putString("key_road_surface", preferences.roadSurfaceQuality)
             .putBoolean("key_avoid_traffic_lights", preferences.avoidTrafficLights)
             .putBoolean("key_avoid_highways", preferences.avoidHighways)
             .putBoolean("key_avoid_steep_hills", preferences.avoidSteepHills)
@@ -75,7 +82,6 @@ class PreferencesStorage @Inject constructor(
             .putBoolean("key_prefer_green_routes", preferences.preferGreenRoutes)
             .putBoolean("key_avoid_unlit_streets", preferences.avoidUnlitStreets)
             .putBoolean("key_avoid_cobblestones", preferences.avoidCobblestones)
-            .putBoolean("key_avoid_ferries", preferences.avoidFerries)
             .putString("key_bike_type", preferences.bikeType.name)
             .apply()
     }

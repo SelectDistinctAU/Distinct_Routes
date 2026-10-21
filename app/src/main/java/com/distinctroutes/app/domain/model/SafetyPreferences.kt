@@ -16,6 +16,10 @@ enum class BikeType(
 }
 
 data class SafetyPreferences(
+    val preferResidentialRoads: String = "N1", // "N1" = prefer residential roads, "N2" = only residential, "" = no preference
+    val useFerries: Boolean = false,
+    val preferredSpeedKmH: Int = 20,
+    val roadSurfaceQuality: String = "", // "" = no preference, "Q2" = avoid bad surfaces, "Q0" = excellent surfaces only
     val avoidTrafficLights: Boolean = false,
     val avoidHighways: Boolean = false,
     val avoidSteepHills: Boolean = false,
@@ -23,7 +27,6 @@ data class SafetyPreferences(
     val preferGreenRoutes: Boolean = false,
     val avoidUnlitStreets: Boolean = false,
     val avoidCobblestones: Boolean = false,
-    val avoidFerries: Boolean = false,
     val bikeType: BikeType = BikeType.STANDARD
 ) {
     fun isMobilityDevice(): Boolean {
