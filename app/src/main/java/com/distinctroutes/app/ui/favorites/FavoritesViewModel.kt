@@ -1,6 +1,7 @@
 package com.distinctroutes.app.ui.favorites
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.distinctroutes.app.data.local.FavoritesStorage
 import com.distinctroutes.app.data.local.JournalStorage
 import com.distinctroutes.app.domain.model.FavoriteRoute
@@ -8,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -30,27 +32,37 @@ class FavoritesViewModel @Inject constructor(
     }
 
     fun loadData() {
-        _favorites.value = favoritesStorage.getFavorites()
-        _journalHistory.value = journalStorage.getJournalHistory()
+        viewModelScope.launch {
+            _favorites.value = favoritesStorage.getFavorites()
+            _journalHistory.value = journalStorage.getJournalHistory()
+        }
     }
 
     fun logRideHistory(route: FavoriteRoute) {
-        journalStorage.logRide(route)
-        _journalHistory.value = journalStorage.getJournalHistory()
+        viewModelScope.launch {
+            journalStorage.logRide(route)
+            _journalHistory.value = journalStorage.getJournalHistory()
+        }
     }
 
     fun saveFavorite(route: FavoriteRoute) {
-        favoritesStorage.saveFavorite(route)
-        _favorites.value = favoritesStorage.getFavorites()
+        viewModelScope.launch {
+            favoritesStorage.saveFavorite(route)
+            _favorites.value = favoritesStorage.getFavorites()
+        }
     }
 
     fun removeFavorite(routeId: String) {
-        favoritesStorage.removeFavorite(routeId)
-        _favorites.value = favoritesStorage.getFavorites()
+        viewModelScope.launch {
+            favoritesStorage.removeFavorite(routeId)
+            _favorites.value = favoritesStorage.getFavorites()
+        }
     }
 
     fun clearJournalHistory() {
-        journalStorage.clearJournal()
-        _journalHistory.value = emptyList()
+        viewModelScope.launch {
+            journalStorage.clearJournal()
+            _journalHistory.value = emptyList()
+        }
     }
 }
