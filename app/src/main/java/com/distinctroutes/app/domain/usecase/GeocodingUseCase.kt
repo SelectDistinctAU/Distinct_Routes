@@ -31,8 +31,17 @@ class GeocodingUseCase @Inject constructor(
                     val lat = dto.lat.toDoubleOrNull()
                     val lon = dto.lon.toDoubleOrNull()
                     if (lat != null && lon != null) {
+                        // Extract house number if user entered one in query
+                        val formatted = formatShortAddress(dto.display_name)
+                        val houseNumMatch = Regex("^\\d{1,6}[a-zA-Z]?\\b").find(query.trim())
+                        val finalDisplayName = if (houseNumMatch != null && !formatted.startsWith(houseNumMatch.value)) {
+                            "${houseNumMatch.value} $formatted"
+                        } else {
+                            formatted
+                        }
+
                         AddressLocation(
-                            displayName = formatShortAddress(dto.display_name),
+                            displayName = finalDisplayName,
                             lat = lat,
                             lon = lon
                         )
