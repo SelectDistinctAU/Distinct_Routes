@@ -824,9 +824,9 @@ fun RoutePlannerScreen(
 
                                 Button(
                                     onClick = {
-                                        val shareIntent = viewModel.getNavigationShareIntent(route)
+                                        val navIntent = viewModel.getOsmAndHandoffIntent(route)
                                         try {
-                                            context.startActivity(shareIntent)
+                                            context.startActivity(navIntent)
                                         } catch (e: Exception) {
                                             Toast.makeText(context, "Exported GPX file to cache.", Toast.LENGTH_LONG).show()
                                         }

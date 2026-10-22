@@ -1,13 +1,11 @@
 package com.distinctroutes.app.data.repository
 
-import android.content.Context
 import com.distinctroutes.app.data.api.BBBikeApiService
 import com.distinctroutes.app.data.model.Geometry
 import com.distinctroutes.app.data.model.Route
 import com.distinctroutes.app.data.model.RoutingRequest
 import com.distinctroutes.app.data.model.RoutingResponse
 import com.squareup.moshi.Moshi
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -40,7 +38,6 @@ class BikeRouteRepository @Inject constructor(
 
     companion object {
         private const val CACHE_TTL_MS = 24 * 60 * 60 * 1000L // 24 hours
-        private const val MAX_CACHE_ENTRIES = 50
     }
     
     sealed class RouteResult {
@@ -53,14 +50,14 @@ class BikeRouteRepository @Inject constructor(
         data class Failure(val error: String, val recoverable: Boolean = true) : RouteResult()
         data class OfflineFallback(val message: String) : RouteResult()
     }
-    
+
     fun getSupportedCities(): List<String> {
         return listOf(
             "Perth", "Berlin", "Canberra", "Sydney", "Melbourne",
             "Brisbane", "Adelaide", "London", "Paris", "Rome", "Madrid"
         )
     }
-
+    
     /**
      * Fetches a bike route between two locations.
      * 
@@ -159,43 +156,86 @@ class BikeRouteRepository @Inject constructor(
     private fun parseJsonRoutingResponse(rawText: String, request: RoutingRequest): RoutingResponse {
         return try {
             val root = JSONObject(rawText)
-            val code = root.optString("code", "Ok")
-            val routesArray = root.optJSONArray("routes")
-
-            if (routesArray == null || routesArray.length() == 0) {
-                return createEstimatedRoutingResponse(request)
-            }
-
-            val routeObj = routesArray.getJSONObject(0)
-            val distance = routeObj.optDouble("distance", 0.0)
-            val duration = routeObj.optDouble("duration", 0.0)
-
             val coordinatesList = mutableListOf<List<Double>>()
+            var distance = 0.0
+            var duration = 0.0
 
-            val geometryObj = routeObj.optJSONObject("geometry")
-            if (geometryObj != null) {
-                val coordsArray = geometryObj.optJSONArray("coordinates")
-                if (coordsArray != null) {
-                    for (i in 0 until coordsArray.length()) {
-                        val point = coordsArray.getJSONArray(i)
-                        if (point.length() >= 2) {
-                            coordinatesList.add(listOf(point.getDouble(0), point.getDouble(1)))
+            // 1. Check BBBike Native "Route" -> "Points" schema
+            val bbbikeRouteObj = root.optJSONObject("Route")
+            if (bbbikeRouteObj != null) {
+                distance = bbbikeRouteObj.optDouble("distance", 0.0)
+                duration = bbbikeRouteObj.optDouble("time", 0.0)
+                val pointsArray = bbbikeRouteObj.optJSONArray("Points") ?: bbbikeRouteObj.optJSONArray("points")
+                if (pointsArray != null) {
+                    for (i in 0 until pointsArray.length()) {
+                        val pt = pointsArray.getJSONArray(i)
+                        if (pt.length() >= 2) {
+                            coordinatesList.add(listOf(pt.getDouble(0), pt.getDouble(1)))
                         }
                     }
                 }
-            } else if (routeObj.has("geometry") && routeObj.get("geometry") is String) {
-                val encoded = routeObj.getString("geometry")
-                coordinatesList.addAll(decodePolyline(encoded))
+            }
+
+            // 2. Check BBBike GeoJSON "features" schema
+            if (coordinatesList.isEmpty() && root.has("features")) {
+                val featuresArray = root.optJSONArray("features")
+                if (featuresArray != null && featuresArray.length() > 0) {
+                    val feature = featuresArray.getJSONObject(0)
+                    val geom = feature.optJSONObject("geometry")
+                    val coords = geom?.optJSONArray("coordinates")
+                    if (coords != null) {
+                        for (i in 0 until coords.length()) {
+                            val pt = coords.getJSONArray(i)
+                            if (pt.length() >= 2) {
+                                coordinatesList.add(listOf(pt.getDouble(0), pt.getDouble(1)))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. Check OSRM "routes" schema
+            if (coordinatesList.isEmpty() && root.has("routes")) {
+                val routesArray = root.optJSONArray("routes")
+                if (routesArray != null && routesArray.length() > 0) {
+                    val routeObj = routesArray.getJSONObject(0)
+                    distance = routeObj.optDouble("distance", 0.0)
+                    duration = routeObj.optDouble("duration", 0.0)
+
+                    val geometryObj = routeObj.optJSONObject("geometry")
+                    if (geometryObj != null) {
+                        val coordsArray = geometryObj.optJSONArray("coordinates")
+                        if (coordsArray != null) {
+                            for (i in 0 until coordsArray.length()) {
+                                val point = coordsArray.getJSONArray(i)
+                                if (point.length() >= 2) {
+                                    coordinatesList.add(listOf(point.getDouble(0), point.getDouble(1)))
+                                }
+                            }
+                        }
+                    } else if (routeObj.has("geometry") && routeObj.get("geometry") is String) {
+                        val encoded = routeObj.getString("geometry")
+                        coordinatesList.addAll(decodePolyline(encoded))
+                    }
+                }
+            }
+
+            // 4. Calculate real street distance if not provided
+            if (distance == 0.0 && coordinatesList.size >= 2) {
+                for (i in 0 until coordinatesList.size - 1) {
+                    val p1 = coordinatesList[i]
+                    val p2 = coordinatesList[i + 1]
+                    distance += calculateHaversineDistance(p1[1], p1[0], p2[1], p2[0])
+                }
             }
 
             if (coordinatesList.size < 2) {
-                coordinatesList.add(listOf(request.startLon, request.startLat))
-                coordinatesList.add(listOf(request.endLon, request.endLat))
+                return createEstimatedRoutingResponse(request)
             }
 
             val route = Route(
                 distance = distance,
-                duration = duration,
+                duration = if (duration > 0) duration else (distance / 4.16),
                 geometry = Geometry(
                     type = "LineString",
                     coordinates = coordinatesList
@@ -205,10 +245,11 @@ class BikeRouteRepository @Inject constructor(
             )
 
             RoutingResponse(
-                code = code,
+                code = "Ok",
                 routes = listOf(route)
             )
         } catch (e: Exception) {
+            android.util.Log.e("DistinctRoutes", "Error parsing BBBike JSON: ${e.message}", e)
             createEstimatedRoutingResponse(request)
         }
     }

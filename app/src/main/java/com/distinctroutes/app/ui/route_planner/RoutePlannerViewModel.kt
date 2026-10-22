@@ -237,7 +237,9 @@ class RoutePlannerViewModel @Inject constructor(
         startLon = lon
         viewModelScope.launch {
             geocodingUseCase.reverseGeocode(lat, lon).onSuccess { address ->
-                startAddressText.value = address
+                if (startAddressText.value.isBlank() || startAddressText.value.startsWith("Location near")) {
+                    startAddressText.value = address
+                }
             }
             if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
                 calculateRoute()
@@ -250,7 +252,9 @@ class RoutePlannerViewModel @Inject constructor(
         endLon = lon
         viewModelScope.launch {
             geocodingUseCase.reverseGeocode(lat, lon).onSuccess { address ->
-                endAddressText.value = address
+                if (endAddressText.value.isBlank() || endAddressText.value.startsWith("Location near")) {
+                    endAddressText.value = address
+                }
             }
             if (startAddressText.value.isNotBlank() && endAddressText.value.isNotBlank()) {
                 calculateRoute()
