@@ -23,5 +23,5 @@
     <string name="btn_save_favorite">Save Favourite</string>
     <string name="btn_remove_favorite">Remove Favorite</string>
     <string name="btn_load_planner">Load into Route Planner</string>
-    <string name="msg_no_favorites">No saved routes yet. Plan a route and tap \'Save to Favorites\' to save it here.</string>
+    <string name="msg_no_favorites">No saved routes yet. Plan a route and tap "Save Favourite" to save it here.</string>
 </resources>

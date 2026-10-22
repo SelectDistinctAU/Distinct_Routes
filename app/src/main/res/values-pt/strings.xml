@@ -23,5 +23,5 @@
     <string name="btn_save_favorite">Salvar</string>
     <string name="btn_remove_favorite">Remover favorito</string>
     <string name="btn_load_planner">Carregar no planejador</string>
-    <string name="msg_no_favorites">Nenhuma rota salva ainda. Planeje uma rota e toque em \'Salvar nos favoritos\'.</string>
+    <string name="msg_no_favorites">Nenhuma rota salva ainda. Planeje uma rota e toque em "Salvar".</string>
 </resources>

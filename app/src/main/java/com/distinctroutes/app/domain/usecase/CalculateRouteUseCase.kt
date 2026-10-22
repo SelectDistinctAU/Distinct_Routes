@@ -36,6 +36,8 @@ class CalculateRouteUseCase @Inject constructor(
             avoidTrafficLights = preferences.avoidTrafficLights,
             avoidHighways = preferences.effectiveAvoidHighways(),
             avoidSteepHills = preferences.effectiveAvoidSteepHills(),
+            avoidUnlitStreets = preferences.avoidUnlitStreets,
+            preferGreenRoutes = preferences.preferGreenRoutes,
             hasDogTrailer = preferences.hasDogTrailer,
             bikeType = preferences.bikeType.displayName
         )
@@ -92,7 +94,8 @@ class CalculateRouteUseCase @Inject constructor(
                         waypointsCount = points.size,
                         polylinePoints = points,
                         rawGpx = result.rawGpx,
-                        safetySummary = summaryParts.joinToString(" • ")
+                        safetySummary = summaryParts.joinToString(" • "),
+                        requestUrl = result.requestUrl
                     )
                 )
             }

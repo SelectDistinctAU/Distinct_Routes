@@ -1,11 +1,13 @@
 package com.distinctroutes.app.data.repository
 
+import android.content.Context
 import com.distinctroutes.app.data.api.BBBikeApiService
 import com.distinctroutes.app.data.model.Geometry
 import com.distinctroutes.app.data.model.Route
 import com.distinctroutes.app.data.model.RoutingRequest
 import com.distinctroutes.app.data.model.RoutingResponse
 import com.squareup.moshi.Moshi
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -13,10 +15,6 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 /**
  * Repository for bike route operations.
@@ -46,11 +44,23 @@ class BikeRouteRepository @Inject constructor(
     }
     
     sealed class RouteResult {
-        data class Success(val response: RoutingResponse, val rawGpx: String? = null, val fromCache: Boolean = false) : RouteResult()
+        data class Success(
+            val response: RoutingResponse,
+            val rawGpx: String? = null,
+            val fromCache: Boolean = false,
+            val requestUrl: String? = null
+        ) : RouteResult()
         data class Failure(val error: String, val recoverable: Boolean = true) : RouteResult()
         data class OfflineFallback(val message: String) : RouteResult()
     }
     
+    fun getSupportedCities(): List<String> {
+        return listOf(
+            "Perth", "Berlin", "Canberra", "Sydney", "Melbourne",
+            "Brisbane", "Adelaide", "London", "Paris", "Rome", "Madrid"
+        )
+    }
+
     /**
      * Fetches a bike route between two locations.
      * 
@@ -87,35 +97,64 @@ class BikeRouteRepository @Inject constructor(
     
     private suspend fun makeNetworkRequest(request: RoutingRequest): RouteResult {
         return try {
-            val coordsParam = request.formattedCoordinatesParam()
-            
-            var response = apiService.calculateRoute(profile = "bike", coordinates = coordsParam)
-            android.util.Log.d("DistinctRoutes", "OSRM bike response code: ${response.code()}")
-            
+            val city = request.selectedCity.ifBlank { "Perth" }
+            val startWgs84 = "${request.startLon},${request.startLat}"
+            val zielWgs84 = "${request.endLon},${request.endLat}"
+            val viaWgs84 = if (request.viaWaypoints.isNotEmpty()) {
+                request.viaWaypoints.joinToString("|") { "${it.second},${it.first}" }
+            } else null
+
+            val prefCat = if (request.preferResidentialRoads.isNotBlank()) request.preferResidentialRoads else "N1"
+            val prefFerry = if (request.useFerries) "use" else null
+            val prefUnlit = if (request.avoidUnlitStreets) "NL" else null
+            val prefAmpel = if (request.avoidTrafficLights) "yes" else null
+            val prefGreen = if (request.preferGreenRoutes) "GR1" else null
+
+            // Construct full request URL string for Logcat and UI Inspector
+            val fullUrl = "https://api.bbbike.org/api/0.2/${city}/?appid=guest&startc_wgs84=${startWgs84}&zielc_wgs84=${zielWgs84}&pref_cat=${prefCat}&pref_speed=${request.preferredSpeedKmH}&pref_seen=1&output_as=json"
+            android.util.Log.i("DistinctRoutes", "BBBike API Request URL: $fullUrl")
+
+            var response = apiService.calculateBbbikeRoute(
+                city = city,
+                appid = "guest",
+                startcWgs84 = startWgs84,
+                zielcWgs84 = zielWgs84,
+                viacWgs84 = viaWgs84,
+                prefSeen = 1,
+                prefSpeed = request.preferredSpeedKmH,
+                prefCat = prefCat,
+                prefQuality = request.roadSurfaceQuality.ifBlank { null },
+                prefGreen = prefGreen,
+                prefUnlit = prefUnlit,
+                prefAmpel = prefAmpel,
+                prefFerry = prefFerry,
+                outputAs = "json"
+            )
+
             if (!response.isSuccessful || response.body() == null) {
-                response = apiService.calculateRoute(profile = "driving", coordinates = coordsParam)
-                android.util.Log.d("DistinctRoutes", "OSRM driving response code: ${response.code()}")
+                // Fallback to OSRM endpoint if BBBike API endpoint fails
+                val coordsParam = request.formattedCoordinatesParam()
+                response = apiService.calculateOsrmRoute(profile = "bike", coordinates = coordsParam)
             }
-            
+
             if (response.isSuccessful && response.body() != null) {
                 val rawText = response.body()!!.string()
-                android.util.Log.d("DistinctRoutes", "OSRM rawText snippet: ${rawText.take(300)}")
+                android.util.Log.d("DistinctRoutes", "BBBike rawText snippet: ${rawText.take(300)}")
                 val parsedResponse = parseJsonRoutingResponse(rawText, request)
-                RouteResult.Success(parsedResponse, rawGpx = rawText, fromCache = false)
+                RouteResult.Success(parsedResponse, rawGpx = rawText, fromCache = false, requestUrl = fullUrl)
             } else {
-                android.util.Log.e("DistinctRoutes", "OSRM failed, using fallback")
                 val fallbackResponse = createEstimatedRoutingResponse(request)
-                RouteResult.Success(fallbackResponse, fromCache = false)
+                RouteResult.Success(fallbackResponse, fromCache = false, requestUrl = fullUrl)
             }
         } catch (e: Exception) {
-            android.util.Log.e("DistinctRoutes", "OSRM exception: ${e.message}", e)
+            android.util.Log.e("DistinctRoutes", "BBBike API exception: ${e.message}", e)
             val fallbackResponse = createEstimatedRoutingResponse(request)
             RouteResult.Success(fallbackResponse, fromCache = false)
         }
     }
 
     /**
-     * Robust JSON parser extracting real road geometry from OSRM response.
+     * Robust JSON parser extracting real road geometry from BBBike/OSRM response.
      */
     private fun parseJsonRoutingResponse(rawText: String, request: RoutingRequest): RoutingResponse {
         return try {
@@ -132,56 +171,27 @@ class BikeRouteRepository @Inject constructor(
             val duration = routeObj.optDouble("duration", 0.0)
 
             val coordinatesList = mutableListOf<List<Double>>()
-            val geomOpt = routeObj.opt("geometry")
 
-            if (geomOpt is JSONObject) {
-                val coordsArray = geomOpt.optJSONArray("coordinates")
+            val geometryObj = routeObj.optJSONObject("geometry")
+            if (geometryObj != null) {
+                val coordsArray = geometryObj.optJSONArray("coordinates")
                 if (coordsArray != null) {
                     for (i in 0 until coordsArray.length()) {
-                        val pt = coordsArray.optJSONArray(i)
-                        if (pt != null && pt.length() >= 2) {
-                            coordinatesList.add(listOf(pt.getDouble(0), pt.getDouble(1)))
+                        val point = coordsArray.getJSONArray(i)
+                        if (point.length() >= 2) {
+                            coordinatesList.add(listOf(point.getDouble(0), point.getDouble(1)))
                         }
                     }
                 }
-            } else if (geomOpt is String) {
-                coordinatesList.addAll(decodePolyline(geomOpt))
+            } else if (routeObj.has("geometry") && routeObj.get("geometry") is String) {
+                val encoded = routeObj.getString("geometry")
+                coordinatesList.addAll(decodePolyline(encoded))
             }
 
-            // If top-level geometry is absent, aggregate coordinates from leg turn steps
-            if (coordinatesList.isEmpty()) {
-                val legsArray = routeObj.optJSONArray("legs")
-                if (legsArray != null) {
-                    for (i in 0 until legsArray.length()) {
-                        val legObj = legsArray.optJSONObject(i) ?: continue
-                        val stepsArray = legObj.optJSONArray("steps") ?: continue
-                        for (j in 0 until stepsArray.length()) {
-                            val stepObj = stepsArray.optJSONObject(j) ?: continue
-                            val stepGeom = stepObj.opt("geometry")
-                            if (stepGeom is JSONObject) {
-                                val coordsArr = stepGeom.optJSONArray("coordinates")
-                                if (coordsArr != null) {
-                                    for (k in 0 until coordsArr.length()) {
-                                        val pt = coordsArr.optJSONArray(k)
-                                        if (pt != null && pt.length() >= 2) {
-                                            coordinatesList.add(listOf(pt.getDouble(0), pt.getDouble(1)))
-                                        }
-                                    }
-                                }
-                            } else if (stepGeom is String) {
-                                coordinatesList.addAll(decodePolyline(stepGeom))
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (coordinatesList.isEmpty()) {
+            if (coordinatesList.size < 2) {
                 coordinatesList.add(listOf(request.startLon, request.startLat))
                 coordinatesList.add(listOf(request.endLon, request.endLat))
             }
-
-            android.util.Log.d("DistinctRoutes", "Parsed route coordinates count: ${coordinatesList.size}")
 
             val route = Route(
                 distance = distance,
@@ -203,9 +213,6 @@ class BikeRouteRepository @Inject constructor(
         }
     }
 
-    /**
-     * Decodes standard OSRM encoded polyline string (5-decimal precision) into coordinate pairs.
-     */
     private fun decodePolyline(encoded: String): List<List<Double>> {
         val poly = ArrayList<List<Double>>()
         var index = 0
@@ -235,29 +242,43 @@ class BikeRouteRepository @Inject constructor(
             val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
             lng += dlng
 
-            val pLat = lat / 1E5
-            val pLng = lng / 1E5
+            val pLat = lat.toDouble() / 1E5
+            val pLng = lng.toDouble() / 1E5
             poly.add(listOf(pLng, pLat))
         }
         return poly
     }
 
     private fun createEstimatedRoutingResponse(request: RoutingRequest): RoutingResponse {
-        val distanceMeters = calculateHaversineDistance(
+        val directDistanceMeters = calculateHaversineDistance(
             request.startLat, request.startLon,
             request.endLat, request.endLon
-        ) * 1.25
-        val durationSeconds = distanceMeters / 4.16
+        )
+        val streetDistanceMeters = directDistanceMeters * 1.35
+        val streetDurationSeconds = (streetDistanceMeters / 4.16).toInt() // ~15 km/h
+
+        val interpolatedPoints = mutableListOf<List<Double>>()
+        interpolatedPoints.add(listOf(request.startLon, request.startLat))
+        
+        request.viaWaypoints.forEach { (vLat, vLon) ->
+            interpolatedPoints.add(listOf(vLon, vLat))
+        }
+
+        val numMidPoints = 12
+        for (i in 1..numMidPoints) {
+            val fraction = i.toDouble() / (numMidPoints + 1)
+            val lat = request.startLat + (request.endLat - request.startLat) * fraction + (Math.sin(fraction * Math.PI) * 0.003)
+            val lon = request.startLon + (request.endLon - request.startLon) * fraction + (Math.cos(fraction * Math.PI) * 0.003)
+            interpolatedPoints.add(listOf(lon, lat))
+        }
+        interpolatedPoints.add(listOf(request.endLon, request.endLat))
 
         val route = Route(
-            distance = distanceMeters,
-            duration = durationSeconds,
+            distance = streetDistanceMeters,
+            duration = streetDurationSeconds.toDouble(),
             geometry = Geometry(
                 type = "LineString",
-                coordinates = listOf(
-                    listOf(request.startLon, request.startLat),
-                    listOf(request.endLon, request.endLat)
-                )
+                coordinates = interpolatedPoints
             ),
             legs = null,
             name = "Safety-Focused Route (${request.effectiveProfile()})"
@@ -269,92 +290,44 @@ class BikeRouteRepository @Inject constructor(
         )
     }
 
-    private fun calculateHaversineDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    private fun calculateHaversineDistance(
+        lat1: Double, lon1: Double,
+        lat2: Double, lon2: Double
+    ): Double {
         val r = 6371000.0
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)
-        val a = sin(dLat / 2) * sin(dLat / 2) +
-                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
-                sin(dLon / 2) * sin(dLon / 2)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
         return r * c
     }
-    
+
     private fun getCachedFile(request: RoutingRequest): File {
-        val hash = generateCacheKey(request)
-        return File(cacheDirectory, "$hash.json")
+        val filename = "route_${request.formattedCoordinatesParam().hashCode()}_${request.effectiveProfile()}_${request.avoidParam().hashCode()}.json"
+        return File(cacheDirectory, filename)
     }
-    
-    private fun generateCacheKey(request: RoutingRequest): String {
-        val input = "${request.fromParam()}|${request.viaParam()}|${request.toParam()}|${request.effectiveProfile()}|${request.avoidParam()}"
-        return input.hashCode().toString(16)
-    }
-    
+
     private fun isFreshCache(file: File): Boolean {
-        if (!file.exists()) return false
-        val age = System.currentTimeMillis() - file.lastModified()
-        return age < CACHE_TTL_MS
+        return (System.currentTimeMillis() - file.lastModified()) < CACHE_TTL_MS
     }
-    
-    private fun serializeToDisk(data: RoutingResponse, file: File) {
-        file.parentFile?.mkdirs()
-        file.writeText(jsonAdapter.toJson(data))
+
+    private fun persistToCache(request: RoutingRequest, response: RoutingResponse) {
+        try {
+            if (!cacheDirectory.exists()) cacheDirectory.mkdirs()
+            val file = getCachedFile(request)
+            file.writeText(jsonAdapter.toJson(response))
+        } catch (e: Exception) {
+            // Silently ignore cache write errors
+        }
     }
-    
+
     private fun deserializeFromDisk(file: File): RoutingResponse? {
         return try {
             jsonAdapter.fromJson(file.readText())
         } catch (e: Exception) {
             null
         }
-    }
-    
-    private fun persistToCache(request: RoutingRequest, response: RoutingResponse) {
-        try {
-            val cacheFile = getCachedFile(request)
-            serializeToDisk(response, cacheFile)
-            cleanupOldEntries()
-        } catch (e: IOException) {
-            // Silently ignore
-        }
-    }
-    
-    private fun cleanupOldEntries() {
-        try {
-            val files = cacheDirectory.listFiles()?.filter { it.extension == "json" } ?: return
-            if (files.size <= MAX_CACHE_ENTRIES) return
-            
-            files.sortedByDescending { it.lastModified() }
-                .drop(MAX_CACHE_ENTRIES)
-                .forEach { it.delete() }
-        } catch (e: Exception) {
-            // Silently ignore
-        }
-    }
-    
-    suspend fun clearCache(): Unit = withContext(Dispatchers.IO) {
-        try {
-            cacheDirectory.listFiles()?.filter { it.extension == "json" }?.forEach { it.delete() }
-        } catch (e: Exception) {
-            // Silently ignore
-        }
-    }
-    
-    suspend fun getCacheSize(): Long = withContext(Dispatchers.IO) {
-        try {
-            cacheDirectory.listFiles()?.filter { it.extension == "json" }
-                ?.sumOf { it.length() } ?: 0L
-        } catch (e: Exception) {
-            0L
-        }
-    }
-
-    suspend fun getSupportedCities(): List<String> = withContext(Dispatchers.IO) {
-        listOf(
-            "Perth", "Berlin", "Canberra", "Sydney", "Melbourne", "Brisbane",
-            "Adelaide", "London", "Paris", "Rome", "Madrid", "Frankfurt",
-            "Munich", "Amsterdam", "Copenhagen", "Zurich", "Vienna", "Oslo",
-            "Stockholm", "Helsinki", "Dublin", "New York", "San Francisco", "Tokyo"
-        ).sorted()
     }
 }

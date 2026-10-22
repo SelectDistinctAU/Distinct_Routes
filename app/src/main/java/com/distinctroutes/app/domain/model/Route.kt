@@ -11,5 +11,6 @@ data class Route(
     val waypointsCount: Int,
     val polylinePoints: List<Pair<Double, Double>> = emptyList(),
     val rawGpx: String? = null,
-    val safetySummary: String = ""
+    val safetySummary: String = "",
+    val requestUrl: String? = null
 )

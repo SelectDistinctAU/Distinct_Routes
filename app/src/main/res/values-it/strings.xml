@@ -23,5 +23,5 @@
     <string name="btn_save_favorite">Salva</string>
     <string name="btn_remove_favorite">Rimuovi preferito</string>
     <string name="btn_load_planner">Carica nel pianificatore</string>
-    <string name="msg_no_favorites">Nessun percorso salvato. Calcola un percorso e tocca \'Salva nei preferiti\'.</string>
+    <string name="msg_no_favorites">Nessun percorso salvato. Calcola un percorso e tocca "Salva".</string>
 </resources>

@@ -13,6 +13,7 @@ data class RoutingRequest(
     val endLon: Double,
     val viaWaypoints: List<Pair<Double, Double>> = emptyList(),
     val profile: String = "bike",
+    val selectedCity: String = "Perth",
     val language: String? = "en",
     val preferResidentialRoads: String = "N1",
     val useFerries: Boolean = false,
@@ -21,6 +22,8 @@ data class RoutingRequest(
     val avoidTrafficLights: Boolean = false,
     val avoidHighways: Boolean = false,
     val avoidSteepHills: Boolean = false,
+    val avoidUnlitStreets: Boolean = false,
+    val preferGreenRoutes: Boolean = false,
     val hasDogTrailer: Boolean = false,
     val bikeType: String = "bike"
 ) {

@@ -724,6 +724,44 @@ fun RoutePlannerScreen(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text("Safety: ${route.safetySummary}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+
+                            if (!route.requestUrl.isNullOrBlank()) {
+                                var showInspector by remember { mutableStateOf(false) }
+                                TextButton(
+                                    onClick = { showInspector = !showInspector },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = if (showInspector) "Hide BBBike API Request URL" else "Inspect BBBike API Request URL 🔍",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+
+                                AnimatedVisibility(visible = showInspector) {
+                                    Card(
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    ) {
+                                        Column(modifier = Modifier.padding(10.dp)) {
+                                            Text(
+                                                text = "Outgoing BBBike API v0.2 GET URL:",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = route.requestUrl,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Row(

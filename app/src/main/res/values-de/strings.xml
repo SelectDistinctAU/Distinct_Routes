@@ -23,5 +23,5 @@
     <string name="btn_save_favorite">Speichern</string>
     <string name="btn_remove_favorite">Favorit entfernen</string>
     <string name="btn_load_planner">In Routenplaner laden</string>
-    <string name="msg_no_favorites">Noch keine gespeicherten Routen. Planen Sie eine Route und tippen Sie auf \'Als Favorit speichern\'.</string>
+    <string name="msg_no_favorites">Noch keine gespeicherten Routen. Planen Sie eine Route und tippen Sie auf "Speichern".</string>
 </resources>

@@ -83,18 +83,27 @@ class GeocodingUseCase @Inject constructor(
         val parts = fullAddress.split(",").map { it.trim() }.filter { it.isNotEmpty() }
         if (parts.isEmpty()) return fullAddress
 
-        // Extract up to first 3 significant place components, filtering postal codes and country names
+        // Extract up to first 3 significant place components, combining house numbers with street names
         val shortParts = mutableListOf<String>()
-        for (part in parts) {
+        var i = 0
+        while (i < parts.size) {
+            val part = parts[i]
+            if (part.matches(Regex("^\\d{1,6}[a-zA-Z]?$")) && i + 1 < parts.size && !parts[i + 1].matches(Regex("^\\d{4,6}$"))) {
+                shortParts.add("$part ${parts[i + 1]}")
+                i += 2
+                continue
+            }
             if (part.matches(Regex("^\\d{4,6}$")) ||
                 part.equals("Australia", true) ||
                 part.equals("Deutschland", true) ||
                 part.equals("United Kingdom", true) ||
                 part.equals("Germany", true)
             ) {
+                i++
                 continue
             }
             shortParts.add(part)
+            i++
             if (shortParts.size >= 3) break
         }
 

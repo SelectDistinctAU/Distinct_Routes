@@ -23,5 +23,5 @@
     <string name="btn_save_favorite">Guardar</string>
     <string name="btn_remove_favorite">Eliminar favorito</string>
     <string name="btn_load_planner">Cargar en el planificador</string>
-    <string name="msg_no_favorites">Sin rutas guardadas. Planifique una ruta y toque \'Guardar en favoritos\'.</string>
+    <string name="msg_no_favorites">Sin rutas guardadas. Planifique una ruta y toque "Guardar".</string>
 </resources>

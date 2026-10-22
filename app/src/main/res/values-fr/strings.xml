@@ -23,5 +23,5 @@
     <string name="btn_save_favorite">Sauvegarder</string>
     <string name="btn_remove_favorite">Supprimer le favori</string>
     <string name="btn_load_planner">Charger dans le planificateur</string>
-    <string name="msg_no_favorites">Aucun itinéraire enregistré. Planifiez un itinéraire et appuyez sur \'Enregistrer dans les favoris\'.</string>
+    <string name="msg_no_favorites">Aucun itinéraire enregistré. Planifiez un itinéraire et appuyez sur "Sauvegarder".</string>
 </resources>

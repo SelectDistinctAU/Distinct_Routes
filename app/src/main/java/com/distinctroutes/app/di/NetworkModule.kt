@@ -77,7 +77,7 @@ class NetworkModule {
         moshi: Moshi
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://router.project-osrm.org/")
+            .baseUrl("https://api.bbbike.org/")
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
