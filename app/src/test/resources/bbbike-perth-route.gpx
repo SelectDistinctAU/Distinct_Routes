@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="BBBike 0.2 Perth" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Clinton Avenue to Boorloo Bridge Shared Path</name>
+    <desc>Quiet residential safety route avoiding Albany Highway, Shepperton Road, Berwick Street, and Jarrah Road</desc>
+  </metadata>
+  <trk>
+    <name>Clinton Ave → Boorloo Bridge Safe Route</name>
+    <trkseg>
+      <trkpt lat="-32.0016" lon="115.8988"><name>Clinton Avenue</name></trkpt>
+      <trkpt lat="-32.0014" lon="115.8982"><name>Hill View Terrace</name></trkpt>
+      <trkpt lat="-31.9982" lon="115.8951"><name>Devenish Street</name></trkpt>
+      <trkpt lat="-31.9918" lon="115.8912"><name>Basinghall Street</name></trkpt>
+      <trkpt lat="-31.9882" lon="115.8890"><name>Hedland Street</name></trkpt>
+      <trkpt lat="-31.9868" lon="115.8878"><name>Sussex Street</name></trkpt>
+      <trkpt lat="-31.9858" lon="115.8869"><name>Gloucester Street</name></trkpt>
+      <trkpt lat="-31.9812" lon="115.8831"><name>McMillan Street</name></trkpt>
+      <trkpt lat="-31.9770" lon="115.8795"><name>Gloucester Street</name></trkpt>
+      <trkpt lat="-31.9705" lon="115.8742"><name>Armagh Street</name></trkpt>
+      <trkpt lat="-31.9678" lon="115.8720"><name>Hordern Street</name></trkpt>
+      <trkpt lat="-31.9642" lon="115.8814"><name>Boorloo Bridge Shared Path</name></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

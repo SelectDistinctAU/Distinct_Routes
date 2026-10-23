@@ -79,6 +79,33 @@ This applies to:
 **If uncertain:** Flag for Project Owner review. Never guess.
 
 ---
+## Distinct Routes — Testing Accountability Protocol (Effective Immediately)
+
+1. **Bug Reproduction Log**
+    - Exact command or UI sequence that triggers failure
+    - Terminal output or screenshot showing error state
+    - Comparison: what the correct output should be
+
+2. **Fix Evidence**
+    - Same command/UI sequence post-fix
+    - Corrected output matching expectation
+    - No change to unrelated paths (regression check)
+
+3. **Automated Test Coverage**
+    - New or updated unit test demonstrating the fix
+    - All existing tests still pass (`./gradlew testDebugUnitTest`)
+    - Smoke test suite passes (see smoke_tests.sh)
+
+4. **Human Verification**
+    - Select Distinct employee manually confirms the fix
+    - No automatic "approved" without human signature
+
+**Consequences of Non-Compliance:**
+- Fixes submitted without this protocol are automatically rejected
+- Repeated failures to comply will trigger audit review
+- ASAI has no authority to close bugs without evidence
+
+
 
 ## CODING STANDARDS
 

@@ -108,7 +108,7 @@ class BikeRouteRepository @Inject constructor(
             val prefGreen = if (request.preferGreenRoutes) "GR1" else null
 
             // Construct full request URL string for Logcat and UI Inspector
-            val fullUrl = "https://api.bbbike.org/api/0.2/${city}/?appid=guest&startc_wgs84=${startWgs84}&zielc_wgs84=${zielWgs84}&pref_cat=${prefCat}&pref_speed=${request.preferredSpeedKmH}&pref_seen=1&output_as=json"
+            val fullUrl = "https://api.bbbike.org/api/0.2/${city}/?appid=guest&startc_wgs84=${startWgs84}&zielc_wgs84=${zielWgs84}&pref_cat=${prefCat}&pref_speed=${request.preferredSpeedKmH}&pref_seen=1&output_as=gpx-route"
             android.util.Log.i("DistinctRoutes", "BBBike API Request URL: $fullUrl")
 
             var response = apiService.calculateBbbikeRoute(
@@ -125,7 +125,7 @@ class BikeRouteRepository @Inject constructor(
                 prefUnlit = prefUnlit,
                 prefAmpel = prefAmpel,
                 prefFerry = prefFerry,
-                outputAs = "json"
+                outputAs = "gpx-route"
             )
 
             if (!response.isSuccessful || response.body() == null) {
@@ -137,7 +137,7 @@ class BikeRouteRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 val rawText = response.body()!!.string()
                 android.util.Log.d("DistinctRoutes", "BBBike rawText snippet: ${rawText.take(300)}")
-                val parsedResponse = parseJsonRoutingResponse(rawText, request)
+                val parsedResponse = parseGpxOrJsonResponse(rawText, request)
                 RouteResult.Success(parsedResponse, rawGpx = rawText, fromCache = false, requestUrl = fullUrl)
             } else {
                 val fallbackResponse = createEstimatedRoutingResponse(request)
@@ -148,6 +148,67 @@ class BikeRouteRepository @Inject constructor(
             val fallbackResponse = createEstimatedRoutingResponse(request)
             RouteResult.Success(fallbackResponse, fromCache = false)
         }
+    }
+
+    /**
+     * Parses GPX XML route waypoints from BBBike API v0.2.
+     */
+    private fun parseGpxOrJsonResponse(rawText: String, request: RoutingRequest): RoutingResponse {
+        val coordinatesList = mutableListOf<List<Double>>()
+
+        // 1. Parse GPX <rtept> or <trkpt> coordinates: lat="..." lon="..."
+        val ptRegex = Regex("""(?:<rtept|<trkpt)\s+lat=["']([^"']+)["']\s+lon=["']([^"']+)["']""")
+        val matches = ptRegex.findAll(rawText)
+
+        for (match in matches) {
+            val lat = match.groupValues[1].toDoubleOrNull()
+            val lon = match.groupValues[2].toDoubleOrNull()
+            if (lat != null && lon != null) {
+                coordinatesList.add(listOf(lon, lat))
+            }
+        }
+
+        // Also check reverse attribute order: lon="..." lat="..."
+        if (coordinatesList.isEmpty()) {
+            val reversePtRegex = Regex("""(?:<rtept|<trkpt)\s+lon=["']([^"']+)["']\s+lat=["']([^"']+)["']""")
+            val reverseMatches = reversePtRegex.findAll(rawText)
+            for (match in reverseMatches) {
+                val lon = match.groupValues[1].toDoubleOrNull()
+                val lat = match.groupValues[2].toDoubleOrNull()
+                if (lat != null && lon != null) {
+                    coordinatesList.add(listOf(lon, lat))
+                }
+            }
+        }
+
+        // If GPX parsing extracted 2 or more waypoints, calculate street distance and return
+        if (coordinatesList.size >= 2) {
+            var totalDistanceMeters = 0.0
+            for (i in 0 until coordinatesList.size - 1) {
+                val p1 = coordinatesList[i]
+                val p2 = coordinatesList[i + 1]
+                totalDistanceMeters += calculateHaversineDistance(p1[1], p1[0], p2[1], p2[0])
+            }
+
+            val route = Route(
+                distance = totalDistanceMeters,
+                duration = totalDistanceMeters / 5.5, // ~20 km/h
+                geometry = Geometry(
+                    type = "LineString",
+                    coordinates = coordinatesList
+                ),
+                legs = null,
+                name = "Safety-Focused Route (${request.effectiveProfile()})"
+            )
+
+            return RoutingResponse(
+                code = "Ok",
+                routes = listOf(route)
+            )
+        }
+
+        // Fallback to JSON parsing
+        return parseJsonRoutingResponse(rawText, request)
     }
 
     /**

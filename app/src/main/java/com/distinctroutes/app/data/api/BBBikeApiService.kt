@@ -30,7 +30,7 @@ interface BBBikeApiService {
         @Query("pref_unlit") prefUnlit: String? = null,
         @Query("pref_ampel") prefAmpel: String? = null,
         @Query("pref_ferry") prefFerry: String? = null,
-        @Query("output_as") outputAs: String = "json"
+        @Query("output_as") outputAs: String = "gpx-route"
     ): Response<ResponseBody>
 
     /**
