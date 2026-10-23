@@ -181,6 +181,18 @@ class BikeRouteRepository @Inject constructor(
             }
         }
 
+        // Guarantee blue route line connects 100% directly to Start Pin and End Pin
+        if (coordinatesList.isNotEmpty()) {
+            val first = coordinatesList.first()
+            if (calculateHaversineDistance(request.startLat, request.startLon, first[1], first[0]) > 5.0) {
+                coordinatesList.add(0, listOf(request.startLon, request.startLat))
+            }
+            val last = coordinatesList.last()
+            if (calculateHaversineDistance(request.endLat, request.endLon, last[1], last[0]) > 5.0) {
+                coordinatesList.add(listOf(request.endLon, request.endLat))
+            }
+        }
+
         // If GPX parsing extracted 2 or more waypoints, calculate street distance and return
         if (coordinatesList.size >= 2) {
             var totalDistanceMeters = 0.0
@@ -278,6 +290,18 @@ class BikeRouteRepository @Inject constructor(
                         val encoded = routeObj.getString("geometry")
                         coordinatesList.addAll(decodePolyline(encoded))
                     }
+                }
+            }
+
+            // Guarantee blue route line connects 100% directly to Start Pin and End Pin
+            if (coordinatesList.isNotEmpty()) {
+                val first = coordinatesList.first()
+                if (calculateHaversineDistance(request.startLat, request.startLon, first[1], first[0]) > 5.0) {
+                    coordinatesList.add(0, listOf(request.startLon, request.startLat))
+                }
+                val last = coordinatesList.last()
+                if (calculateHaversineDistance(request.endLat, request.endLon, last[1], last[0]) > 5.0) {
+                    coordinatesList.add(listOf(request.endLon, request.endLat))
                 }
             }
 
