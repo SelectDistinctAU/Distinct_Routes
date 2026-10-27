@@ -484,6 +484,7 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text("Version: ${Constants.VERSION_NAME} (Build ${Constants.VERSION_CODE})")
+                Text("Build Date: ${com.distinctroutes.app.BuildConfig.BUILD_TIME}")
                 Text("License: GNU General Public License v3.0 (GPLv3)")
                 Spacer(modifier = Modifier.height(4.dp))
 

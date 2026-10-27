@@ -1,3 +1,7 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -16,6 +20,9 @@ android {
         versionCode = 4
         versionName = "0.2.0-alpha.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val currentFormattedDate = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.US).format(Date())
+        buildConfigField("String", "BUILD_TIME", "\"$currentFormattedDate\"")
     }
 
     buildTypes {
