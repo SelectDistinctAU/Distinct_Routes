@@ -17,8 +17,8 @@ android {
         applicationId = "com.distinctroutes.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.2.0-alpha.4"
+        versionCode = 5
+        versionName = "0.2.0-alpha.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         val currentFormattedDate = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.US).format(Date())
@@ -32,6 +32,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
