@@ -47,6 +47,9 @@ Tap the **Selected Vehicle / Mobility Device** box at the top of the screen to o
 
 ## 3. Planning a Route
 
+> [!TIP]
+> **Address Entry Tip:** As recommended by BBBike.org, entering a street name and suburb (e.g., *"Hill View Terrace, St James"*) provides the most accurate quiet backstreet routing.
+
 1. **Enter Start Address:**
    * Type an address (e.g. *"Alexanderplatz, Berlin"* or *"Perth Station"*) and pick a suggestion from the dropdown.
    * Or tap the **GPS Target Icon** (`⊕`) inside the Start field to use your current location.
