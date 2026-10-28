@@ -802,6 +802,24 @@ fun RoutePlannerScreen(
                             Spacer(modifier = Modifier.height(2.dp))
                             Text("Safety: ${route.safetySummary}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, maxLines = 1, overflow = TextOverflow.Ellipsis)
 
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(top = 2.dp, bottom = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Snapped to nearest safe route node",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
                             if (!route.requestUrl.isNullOrBlank()) {
                                 var showInspector by remember { mutableStateOf(false) }
                                 TextButton(
