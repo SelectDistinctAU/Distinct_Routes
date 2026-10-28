@@ -42,7 +42,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.PinDrop
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Button
@@ -328,7 +330,7 @@ fun RoutePlannerScreen(
                             }
                         }
 
-                        // START Address Input with Inline GPS Target Icon
+                        // START Address Input with Explicit Search & Pin Drop Buttons
                         Box {
                             OutlinedTextField(
                                 value = startAddress,
@@ -339,20 +341,40 @@ fun RoutePlannerScreen(
                                 label = { Text("Start Address or Place") },
                                 leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = "Start Flag A icon") },
                                 trailingIcon = {
-                                    IconButton(
-                                        onClick = {
-                                            if (viewModel.locationHelper.hasLocationPermission()) {
-                                                viewModel.useCurrentGpsLocation()
-                                            } else {
-                                                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                                            }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        IconButton(
+                                            onClick = { viewModel.searchAddress(startAddress, field = "start") }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Search,
+                                                contentDescription = "Search start address",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
                                         }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.MyLocation,
-                                            contentDescription = "Use current GPS location",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
+                                        IconButton(
+                                            onClick = { isTopCardCollapsed = true }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.PinDrop,
+                                                contentDescription = "Drop start pin on map",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                if (viewModel.locationHelper.hasLocationPermission()) {
+                                                    viewModel.useCurrentGpsLocation()
+                                                } else {
+                                                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.MyLocation,
+                                                contentDescription = "Use current GPS location",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
                                     }
                                 },
                                 modifier = Modifier
@@ -386,6 +408,15 @@ fun RoutePlannerScreen(
                                     leadingIcon = { Icon(Icons.Default.Place, contentDescription = "Yellow Via Stop Dot icon") },
                                     trailingIcon = {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
+                                            IconButton(
+                                                onClick = { viewModel.searchAddress(stop.addressText, field = stop.id) }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Search,
+                                                    contentDescription = "Search via stop address",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
                                             if (index > 0) {
                                                 IconButton(onClick = { viewModel.moveViaStopUp(index) }) {
                                                     Icon(
@@ -446,7 +477,7 @@ fun RoutePlannerScreen(
                             )
                         }
 
-                        // DESTINATION Address Input with Swap Button
+                        // DESTINATION Address Input with Explicit Search & Pin Drop Buttons
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -460,6 +491,28 @@ fun RoutePlannerScreen(
                                     },
                                     label = { Text("Destination Address or Place") },
                                     leadingIcon = { Icon(Icons.Default.Flag, contentDescription = "Destination Flag B icon") },
+                                    trailingIcon = {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            IconButton(
+                                                onClick = { viewModel.searchAddress(endAddress, field = "end") }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Search,
+                                                    contentDescription = "Search destination address",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                            IconButton(
+                                                onClick = { isTopCardCollapsed = true }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.PinDrop,
+                                                    contentDescription = "Drop destination pin on map",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+                                    },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .semantics { contentDescription = "Destination address input. Current value: $endAddress" }
@@ -491,6 +544,29 @@ fun RoutePlannerScreen(
                             }
                         }
 
+                        // Explicit "Calculate Route Now" Button on Address Card
+                        Button(
+                            onClick = { viewModel.calculateRoute() },
+                            shape = PillShape,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .semantics { contentDescription = "Calculate route now button" }
+                        ) {
+                            Icon(Icons.Default.Navigation, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Calculate Route Now ➔",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
                         // Collapsible Safety Preferences
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -515,6 +591,7 @@ fun RoutePlannerScreen(
                                             style = MaterialTheme.typography.titleSmall
                                         )
                                         val activeSummary = buildList {
+                                            if (preferences.preferResidentialRoads == "N1") add("Quiet Streets")
                                             if (preferences.hasDogTrailer) add("Dog Trailer")
                                             if (preferences.preferGreenRoutes) add("Green Routes")
                                             if (preferences.avoidUnlitStreets) add("Night Safety")
@@ -579,7 +656,7 @@ fun RoutePlannerScreen(
                                             label = "Use Ferries",
                                             checked = preferences.useFerries,
                                             onCheckedChange = { viewModel.updateSafetyPreferences(useFerries = it) },
-                                            contentDescription = "Toggle use ferries"
+                                            contentDescription = "Toggle default use ferries"
                                         )
 
                                         SafetyToggleRow(

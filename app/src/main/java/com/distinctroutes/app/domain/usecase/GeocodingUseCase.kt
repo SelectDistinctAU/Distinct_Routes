@@ -59,14 +59,34 @@ class GeocodingUseCase @Inject constructor(
     suspend fun reverseGeocode(lat: Double, lon: Double): Result<String> {
         return try {
             val response = nominatimApiService.reverseGeocode(lat = lat, lon = lon)
-            val name = response.body()?.display_name
-            if (response.isSuccessful && !name.isNullOrBlank()) {
-                Result.success(formatShortAddress(name))
-            } else {
-                Result.success("Location near (%.4f, %.4f)".format(lat, lon))
+            if (response.isSuccessful && response.body() != null) {
+                val dto = response.body()!!
+                val addrMap = dto.address
+                if (addrMap != null) {
+                    val featureName = addrMap["amenity"] ?: addrMap["building"] ?: addrMap["shop"] ?: addrMap["historic"]
+                    val road = addrMap["road"] ?: addrMap["pedestrian"] ?: addrMap["footway"] ?: addrMap["cycleway"]
+                    val suburb = addrMap["suburb"] ?: addrMap["neighbourhood"] ?: addrMap["town"] ?: addrMap["city"]
+                    val houseNumber = addrMap["house_number"]
+
+                    val constructed = buildList {
+                        if (featureName != null) add(featureName)
+                        if (road != null) {
+                            if (houseNumber != null) add("$houseNumber $road") else add(road)
+                        }
+                        if (suburb != null && suburb != featureName) add(suburb)
+                    }.filter { it.isNotBlank() }.distinct()
+
+                    if (constructed.isNotEmpty()) {
+                        return Result.success(constructed.joinToString(", "))
+                    }
+                }
+                if (!dto.display_name.isNullOrBlank()) {
+                    return Result.success(formatShortAddress(dto.display_name))
+                }
             }
+            Result.success("Map Pin Location (%.4f, %.4f)".format(lat, lon))
         } catch (e: Exception) {
-            Result.success("Location near (%.4f, %.4f)".format(lat, lon))
+            Result.success("Map Pin Location (%.4f, %.4f)".format(lat, lon))
         }
     }
 
